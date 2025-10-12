@@ -1,14 +1,15 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { View, Text } from "react-native";
+import React from "react";
+import { useLocalSearchParams } from "expo-router";
 
-const WithDraw = () => {
+const WithdrawDetail = () => {
+  const { id } = useLocalSearchParams();
+
   return (
-    <View>
-      <Text>[id]</Text>
+    <View className="flex-1 justify-center items-center">
+      <Text className="text-xl font-bold">Withdraw ID: {id}</Text>
     </View>
-  )
-}
+  );
+};
 
-export default WithDraw
-
-const styles = StyleSheet.create({})
+export default WithdrawDetail;

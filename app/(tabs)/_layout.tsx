@@ -6,7 +6,7 @@ import COLORS from "@/constants/Colors";
 import { StatusBar } from "expo-status-bar";
 export default function TabLayout() {
   // Replace with your actual auth context/state later
-  const userRole: "user" | "admin" = "user";
+  const userRole: "user" | "admin" = "admin";
 
   const tabs = useMemo(
     () => (userRole === "admin" ? adminTabs : userTabs),
