@@ -1,14 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ScrollView, Text, TouchableOpacity, View, Image ,Modal} from "react-native";
+import {
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  Modal,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { settings } from "@/constants/data";
 import { SettingItem } from "@/types/constant.types";
 import { Link, useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AppModal from "@/components/AppModal";
+import { useUserStore } from "../../store/AuthStore.js";
+// const { hydrated, token } = useUserStore();
+
+// if (!hydrated) return <SplashScreen />;  // or null, loader, etc.
+// if (!token) return <LoginScreen />;
+// return <HomeScreen />;
+
 // Example: replace this with role from auth/user context
-const currentUserRole: "user" | "admin" = "user";
+let currentUserRole;
 
 interface SettingsItemProps {
   icon: string;
@@ -46,16 +61,16 @@ const SettingsItemRow = ({
 
 const Profile = () => {
   const router = useRouter();
-    const [modalVisible, setModalVisible] = useState(false);
+  const { user, hydrated, getProfile, logout, loading } = useUserStore();
+
   const [notifications, setNotifications] = useState([
     { id: 1, message: "Payment received", read: false },
     { id: 2, message: "New job posted", read: true },
   ]);
-
-  const unreadCount = notifications.filter(n => !n.read).length;
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
-
-  // Filter settings based on current user role
+  const [modalVisible, setModalVisible] = useState(false);
+  const unreadCount = notifications.filter((n) => !n.read).length;
+  const currentUserRole = user?.role || "user";
   const filteredSettings: SettingItem[] = settings.filter(
     (item) => item.role === currentUserRole
   );
@@ -71,22 +86,22 @@ const Profile = () => {
           <Text className="text-xl font-rubik-bold text-[#212121]">
             Profile
           </Text>
-           <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Ionicons name="notifications-outline" size={28} color="#212121" />
-          {unreadCount > 0 && (
-            <View
-              style={{
-                position: "absolute",
-                right: -2,
-                top: -2,
-                backgroundColor: "red",
-                width: 10,
-                height: 10,
-                borderRadius: 5,
-              }}
-            />
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Ionicons name="notifications-outline" size={28} color="#212121" />
+            {unreadCount > 0 && (
+              <View
+                style={{
+                  position: "absolute",
+                  right: -2,
+                  top: -2,
+                  backgroundColor: "red",
+                  width: 10,
+                  height: 10,
+                  borderRadius: 5,
+                }}
+              />
+            )}
+          </TouchableOpacity>
         </View>
 
         {/* Avatar */}
@@ -100,7 +115,10 @@ const Profile = () => {
               <MaterialIcons name="verified" size={25} color="green" />
             </TouchableOpacity>
             <Text className="text-2xl font-rubik-bold mt-2 text-[#212121]">
-              John Doe
+              Hello,{" "}
+              {user?.email?.split("@")[0].charAt(0).toUpperCase() +
+                user.email.split("@")[0].slice(1)}
+              
             </Text>
           </View>
         </View>
@@ -136,30 +154,54 @@ const Profile = () => {
           confirmText="Logout"
           cancelText="Cancel"
           onConfirm={() => {
-            console.log("User logged out");
+            logout();
+            setLogoutModalVisible(false);
           }}
         />
-           <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={{ flex: 1, justifyContent: "center", backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <View style={{ backgroundColor: "#FFF", margin: 20, borderRadius: 10, padding: 20 }}>
-            <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>Notifications</Text>
-            {notifications.map(n => (
-              <Text key={n.id} style={{ marginBottom: 5, color: n.read ? "#555" : "#000" }}>
-                {n.message}
+        <Modal
+          visible={modalVisible}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              backgroundColor: "rgba(0,0,0,0.5)",
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: "#FFF",
+                margin: 20,
+                borderRadius: 10,
+                padding: 20,
+              }}
+            >
+              <Text
+                style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}
+              >
+                Notifications
               </Text>
-            ))}
+              {notifications.map((n) => (
+                <Text
+                  key={n.id}
+                  style={{ marginBottom: 5, color: n.read ? "#555" : "#000" }}
+                >
+                  {n.message}
+                </Text>
+              ))}
 
-            <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 10 }}>
-              <Text style={{ color: "blue", textAlign: "right" }}>Close</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                style={{ marginTop: 10 }}
+              >
+                <Text style={{ color: "blue", textAlign: "right" }}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );

@@ -56,7 +56,7 @@ export default function ChangePassword() {
               {/* Back arrow */}
               <View className="flex flex-row items-center mb-8  ">
 
-        <TouchableOpacity onPress={() => router.back()} className="p-2">
+        <TouchableOpacity onPress={() => router.back()} className="-p-2 mr-5">
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
           <Text className="text-2xl font-bold text-gray-800 ">Change Password</Text>

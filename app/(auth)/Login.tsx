@@ -1,50 +1,175 @@
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
-import React from "react";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
+import Toast from "react-native-toast-message";
+import { Ionicons } from "@expo/vector-icons";
+import { useUserStore } from "../../store/AuthStore";
 
-const Login = () => {
+export default function Login() {
   const router = useRouter();
+  const { loading, login } = useUserStore();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const links = [
-    { label: "Go to Home", href: "/ReferEarn" },
-    { label: "Contact", href: "/ContactDetails" },
-    { label: "All Reports", href: "/Reports" },
-    { label: "Report #3", href: "/reports/3" },
-    { label: "Withdraw", href: "/(withdraw)" },
-    { label: "otp", href: "/OtpVerify" },
-    { label: "otp", href: "/ResetPassword" },
-  ];
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Toast.show({
+        type: "error",
+        text1: "Missing fields",
+        text2: "Please enter email and password.",
+      });
+      return;
+    }
+    // Email basic regex validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Toast.show({
+        type: "error",
+        text1: "Invalid email",
+        text2: "Please enter a valid email address.",
+      });
+      return;
+    }
+    if (password.length < 6) {
+      Toast.show({
+        type: "error",
+        text1: "Invalid password",
+        text2: "Password must be at least 6 characters long.",
+      });
+      return;
+    }
+    const res = await login({ email, password });
+
+    if (!res) return; // STOP here if login failed
+    if (!res || res.error) {
+      // Handle special cases
+      if (res?.message === "User email not verified") {
+        router.push({
+          pathname: "/OtpVerify",
+          params: { email: email },
+        });
+        return;
+      }
+      if (res?.message === "Account suspended. Contact support.") {
+        Toast.show({ type: "error", text1: res.message });
+        return; // Stop login
+      }
+      Toast.show({ type: "error", text1: res?.message || "Login failed" });
+      return;
+    }
+    setTimeout(() => {
+      if (res.user?.role !== "admin") {
+        router.replace("/Home");
+      } else {
+        router.replace("/Dashboard");
+      }
+    }, 2000); // 2000ms = 2 seconds;
+  };
 
   return (
-    <SafeAreaView className="flex-1 bg-white px-8 pt-10">
-      <View>
-        <Text className="text-2xl font-bold text-gray-800 mb-6">Hello 👋</Text>
-
-        {links.map((link, index) => (
-          <Link key={index} href={link.href} asChild>
-            <TouchableOpacity className="bg-blue-500 py-3 rounded-2xl mb-3 active:bg-blue-600">
-              <Text className="text-center text-white text-base font-semibold">
-                {link.label}
-              </Text>
-            </TouchableOpacity>
-          </Link>
-        ))}
-
-        {/* 👉 Move to withdraw/:id dynamically */}
-        <TouchableOpacity
-          onPress={() => router.push("/(withdraw)/5")}
-          className="bg-green-500 py-3 rounded-2xl mb-3 active:bg-green-600"
+    <SafeAreaView className="flex-1 bg-[#FFF8E7]">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            padding: 24,
+          }}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text className="text-center text-white text-base font-semibold">
-            Go to Withdraw ID #3
-          </Text>
-        </TouchableOpacity>
-      </View>
+          {/* Top Image */}
+          <View className="items-center mb-10">
+            <Image
+              source={require("../../assets/images/Auth.png")}
+              className="w-full h-72"
+              resizeMode="contain"
+            />
+          </View>
+
+          {/* Email Input */}
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            className="border border-gray-300 rounded-lg px-4 py-3 mb-4 text-[#212121]"
+          />
+
+          {/* Password Input with toggle */}
+          <View className="relative mb-4">
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Password"
+              secureTextEntry={!showPassword}
+              className="border border-gray-300 rounded-lg px-4 py-3 text-[#212121]"
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3"
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={24}
+                color="#555"
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Login Button */}
+          <TouchableOpacity
+            onPress={handleLogin}
+            disabled={loading}
+            className={`bg-yellow-500 py-4 rounded-xl mb-4 w-full items-center ${
+              loading ? "opacity-50" : ""
+            }`}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="text-black font-bold text-lg">Login</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Signup Link */}
+          <TouchableOpacity
+            onPress={() => router.push("/SignUp")}
+            className="items-center mt-2"
+          >
+            <Text className="text-[#43A047] font-semibold text-center">
+              Don't have an account?{" "}
+              <Text className="text-[#FFB800] underline">Sign Up</Text>
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push("/OtpVerify")}
+            className="items-center mt-2"
+          >
+            <Text className="text-[#43A047] font-semibold text-center">
+              Don't have an account?{" "}
+              <Text className="text-[#FFB800] underline">Sign Up</Text>
+            </Text>
+          </TouchableOpacity>
+
+          <Toast />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
-};
-
-export default Login;
-
-const styles = StyleSheet.create({});
+}

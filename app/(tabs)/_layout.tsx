@@ -3,10 +3,11 @@ import { Tabs } from "expo-router";
 import { adminTabs, userTabs } from "@/constants/tabs";
 import { Ionicons } from "@expo/vector-icons";
 import COLORS from "@/constants/Colors";
-import { StatusBar } from "expo-status-bar";
+import { useUserStore } from "@/store/AuthStore";
 export default function TabLayout() {
+  const {user}=useUserStore();
   // Replace with your actual auth context/state later
-  const userRole: "user" | "admin" = "admin";
+  const userRole = user?.role;
 
   const tabs = useMemo(
     () => (userRole === "admin" ? adminTabs : userTabs),

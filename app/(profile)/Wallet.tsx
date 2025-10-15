@@ -2,11 +2,13 @@ import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router"; // <- Router hook
+import { useUserStore } from "@/store/AuthStore";
 
 export default function Wallet() {
   const router = useRouter(); // navigation handler
-  const balance = 1250.75;
+  const {user}=useUserStore();
   const bonus = 100.0;
+  const disabled=user?.walletBalance<100;
 
   return (
     <SafeAreaView className="flex-1 bg-[#fff8e749] p-4">
@@ -19,7 +21,7 @@ export default function Wallet() {
 
         {/* Breadcrumb */}
         <Text className="ml-2 text-[#212121] text-lg font-semibold ">
-          Profile / Wallet
+        Wallet
         </Text>
       </View>
 
@@ -28,19 +30,18 @@ export default function Wallet() {
         <View className="bg-black rounded-2xl p-5 mb-6 shadow-md">
           <Text className="text-gray-300 text-sm">Available Balance</Text>
           <Text className="text-white text-4xl font-bold mt-2">
-            ₹{balance.toFixed(2)}
+            ₹{user?.walletBalance}
           </Text>
 
           <View className="flex-row justify-between items-center mt-4">
             <Text className="text-gray-400 text-sm">Bonus: ₹{bonus}</Text>
 
-            <TouchableOpacity className="bg-[#FFB800] rounded-full px-5 py-2">
+            <TouchableOpacity className="bg-[#FFB800] rounded-full px-5 py-2" disabled={disabled}>
               <Text className="text-[#212121] font-semibold" >Withdraw</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* 💰 Bonus & Payment Info */}
         <View className="bg-gray-100 rounded-2xl p-4 mb-5">
           <Text className="text-lg font-semibold mb-3">Earning Breakdown</Text>
 
