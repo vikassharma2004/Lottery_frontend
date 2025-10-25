@@ -109,12 +109,11 @@ export const useUserStore = create(
             },
 
             login: async ({ email, password }) => {
-                console.log(email, password)
-
+              
                 set({ loading: true, error: null, message: null });
                 try {
                     const res = await AuthAPI.loginUser({ email, password });
-                    if (res.token) await get().setAuth(res.token, res.user || null);
+                    if (res.token && res.user?.role!="admin") await get().setAuth(res.token, res.user || null);
                     Toast.show({ type: 'success', text1: 'Login successful' });
                     return res;
                 } catch (err) {
@@ -145,6 +144,7 @@ export const useUserStore = create(
                 try {
                     await AuthAPI.logoutUser();
                     await get().clearAuth();
+                    Toast.show({ type: 'success', text1: 'Logged out successfully' });
                 } catch (err) {
                     Toast.show({ type: 'error', text1: 'Logout failed', text2: err.message || 'Failed to logout' });
                 } finally {

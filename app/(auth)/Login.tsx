@@ -14,14 +14,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
-import { useUserStore } from "../../store/AuthStore";
+import {useLogin} from "../../hooks/Auth.js";
 
 export default function Login() {
   const router = useRouter();
-  const { loading, login } = useUserStore();
+  // const { loading, login, user } = useUserStore();
+const { mutate: loginUser, isPending } = useLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [screenLoading, setScreenLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -32,50 +34,59 @@ export default function Login() {
       });
       return;
     }
-    // Email basic regex validation
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Toast.show({
         type: "error",
         text1: "Invalid email",
-        text2: "Please enter a valid email address.",
+        text2: "Enter a valid email address.",
       });
       return;
     }
+
     if (password.length < 6) {
       Toast.show({
         type: "error",
-        text1: "Invalid password",
-        text2: "Password must be at least 6 characters long.",
+        text1: "Weak password",
+        text2: "Password must be at least 6 characters.",
       });
       return;
     }
-    const res = await login({ email, password });
 
-    if (!res) return; // STOP here if login failed
-    if (!res || res.error) {
-      // Handle special cases
-      if (res?.message === "User email not verified") {
-        router.push({
-          pathname: "/OtpVerify",
-          params: { email: email,type:"verifyEmail" },
-        });
-        return;
-      }
-      if (res?.message === "Account suspended. Contact support.") {
-        Toast.show({ type: "error", text1: res.message });
-        return; // Stop login
-      }
-      Toast.show({ type: "error", text1: res?.message || "Login failed" });
-      return;
-    }
-    setTimeout(() => {
-      if (res.user?.role !== "admin") {
-        router.replace("/Home");
-      } else {
-        router.replace("/Dashboard");
-      }
-    }, 2000); // 2000ms = 2 seconds;
+    setScreenLoading(true);
+     await loginUser({ email, password });
+    // const res = await login({ email, password });
+    // console.log(user);
+    setScreenLoading(false);
+
+    // if (!res || res.error) {
+    //   if (res?.message === "User email not verified") {
+    //     router.push({
+    //       pathname: "/OtpVerify",
+    //       params: { email, type: "verifyEmail" },
+    //     });
+    //     return;
+    //   }
+    //   if (res?.message === "Account suspended. Contact support.") {
+    //     Toast.show({ type: "error", text1: res.message });
+    //     return;
+    //   }
+    //   Toast.show({ type: "error", text1: res?.message || "Login failed" });
+    //   return;
+    // }
+
+    // if (res.user?.role === "admin") {
+    //   Toast.show({
+    //     type: "error",
+    //     text1: "Access denied",
+    //     text2: "Admin access not allowed on mobile app.",
+    //   });
+    //   return;
+    // }
+
+    // Toast.show({ type: "success", text1: "Login successful!" });
+    // setTimeout(() => router.replace("/Home"), 800);
   };
 
   return (
@@ -101,24 +112,26 @@ export default function Login() {
             />
           </View>
 
-          {/* Email Input */}
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            className="border border-gray-300 rounded-lg px-4 py-3 mb-4 text-[#212121]"
-          />
+          {/* Email */}
+          <View className="mb-4">
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              className="border border-gray-300 rounded-lg px-4 py-3 text-[#212121] bg-white"
+            />
+          </View>
 
-          {/* Password Input with toggle */}
+          {/* Password */}
           <View className="relative mb-4">
             <TextInput
               value={password}
               onChangeText={setPassword}
               placeholder="Password"
               secureTextEntry={!showPassword}
-              className="border border-gray-300 rounded-lg px-4 py-3 text-[#212121]"
+              className="border border-gray-300 rounded-lg px-4 py-3 text-[#212121] bg-white"
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
@@ -127,49 +140,37 @@ export default function Login() {
               <Ionicons
                 name={showPassword ? "eye-off" : "eye"}
                 size={24}
-                color="#555"
+                color="#777"
               />
             </TouchableOpacity>
           </View>
 
-          {/* Login Button */}
+          {/* Login button */}
           <TouchableOpacity
             onPress={handleLogin}
-            disabled={loading}
-            className={`bg-yellow-500 py-4 rounded-xl mb-4 w-full items-center ${
-              loading ? "opacity-50" : ""
+            disabled={isPending || screenLoading}
+            className={`bg-yellow-500 py-4 rounded-xl items-center ${
+              isPending ? "opacity-70" : ""
             }`}
           >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text className="text-black font-bold text-lg">Login</Text>
-            )}
+            <Text className="text-black font-bold text-lg">
+              {isPending ? <ActivityIndicator color={"black"} /> : "Login"}
+            </Text>
           </TouchableOpacity>
 
-          {/* Signup Link */}
+          {/* Sign up link */}
           <TouchableOpacity
             onPress={() => router.push("/SignUp")}
-            className="items-center mt-2"
+            className="items-center mt-4"
           >
             <Text className="text-[#43A047] font-semibold text-center">
               Don't have an account?{" "}
               <Text className="text-[#FFB800] underline">Sign Up</Text>
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push("/OtpVerify")}
-            className="items-center mt-2"
-          >
-            <Text className="text-[#43A047] font-semibold text-center">
-              Don't have an account?{" "}
-              <Text className="text-[#FFB800] underline">Sign Up</Text>
-            </Text>
-          </TouchableOpacity>
-
-          <Toast />
         </ScrollView>
       </KeyboardAvoidingView>
+      <Toast />
     </SafeAreaView>
   );
 }

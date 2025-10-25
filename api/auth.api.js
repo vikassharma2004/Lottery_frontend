@@ -1,55 +1,55 @@
-// src/api/auth.api.js
-import { axiosClient as axios} from './axiosClient.js'
+import { axiosClient } from './axiosClient.js';
 
 // Register
 export const registerUser = async (payload) => {
-  const res = await  axios.post('/auth/register', payload);
-  // assuming server returns { message, data?, token? }
-  return res.data || res;
+  const { data } = await axiosClient.post('/auth/register', payload);
+  return data;
 };
 
 // Login
 export const loginUser = async (payload) => {
-  const res = await  axios.post('/auth/login', payload);
-  return res.data || res;
+  const { data } = await axiosClient.post('/auth/login', payload);
+  return data;
 };
 
 // Get Profile
 export const getProfile = async () => {
-  const res = await  axios.get('/auth/Profile');
-  return res.data || res;
+  const { data } = await axiosClient.get('/auth/profile');
+  return data;
 };
 
 // Logout
 export const logoutUser = async () => {
-  const res = await  axios.post('/auth/logout');
-  return res.data || res;
+  const { data } = await axiosClient.post('/auth/logout');
+  return data;
 };
 
 // Send reset token (email)
 export const sendResetToken = async (payload) => {
-  const res = await  axios.post('/auth/send-reset-token', payload);
-  return res.data || res;
+  const { data } = await axiosClient.post('/auth/send-reset-token', payload);
+  return data;
 };
 
 // Reset password with token
 export const resetPassword = async (token, payload) => {
-  const res = await  axios.post(`/auth/reset-password/${token}`, payload);
-  return res.data || res;
+  const { data } = await axiosClient.post(`/auth/reset-password/${token}`, payload);
+  return data;
 };
+
 // Verify token validity
 export const verifyToken = async () => {
-  const res = await axiosClient.post('/auth/verify-token');
-  return res.data || res;
+  const { data } = await axiosClient.post('/auth/verify-token');
+  return data;
 };
 
-export const generateOtp = async (email,type) => {
-  const res = await axiosClient.post("/otp/generate", { email });
-  console.log("generateOtp response:", res);
-  return res.data || res;
+// Generate OTP
+export const generateOtp = async (email, type) => {
+  const { data } = await axiosClient.post('/otp/generate', { email, type });
+  return data;
 };
 
+// Verify OTP
 export const verifyOtp = async ({ email, otp }) => {
-  const res = await axiosClient.post("/otp/verify", { email, otp });
-  return res.data || res;
+  const { data } = await axiosClient.post('/otp/verify', { email, otp });
+  return data;
 };

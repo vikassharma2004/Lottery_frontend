@@ -34,42 +34,10 @@ export const userSettings: SettingItem[] = [
   },
 ];
 
-// 🧑‍💼 ADMIN SETTINGS
-export const adminSettings: SettingItem[] = [
-  {
-    title: 'Profile',
-    icon: 'person-outline',
-    role: 'admin',
-    navigate:'/ContactDetails'
-  },
-  {
-    title: 'Withdraws',
-    icon: 'card-outline',
-    role: 'admin',
-    navigate:'/(withdraw)'
-  },
-  {
-    title: 'Reports',
-    icon: 'document-text-outline',
-    role: 'admin',
-    navigate:'/Reports'
-  },
-  {
-    title: 'Payments',
-    icon: 'cash-outline',
-    role: 'admin',
-    navigate:'/Payments'
-  },
-   {
-    title: 'Sessions',
-    icon: 'people',
-    role: 'admin',
-    navigate:'/Sessions'
-  },
-];
+
 
 // ✅ COMBINED EXPORT (optional)
-export const settings: SettingItem[] = [...userSettings, ...adminSettings];
+export const settings: SettingItem[] = [...userSettings];
 
 const payments: Payment[] = [
   { id: "1", amount: 500, date: "2025-10-09T12:00:00Z", method: "UPI", status: "success" },

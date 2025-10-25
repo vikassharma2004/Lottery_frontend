@@ -1,73 +1,90 @@
-import { Stack } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+// app/_layout.tsx
+import { Stack, useRouter } from "expo-router";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useUserStore } from "../store/AuthStore";
 import SplashScreen from "../components/SplashScreen";
-import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "react-native-toast-message";
+import { useVerifyToken } from "@/hooks/Auth";
 
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider>
+        <RootContent />
+      </SafeAreaProvider>
+    </QueryClientProvider>
+  );
+}
+
+const RootContent = () => {
   const hydrated = useUserStore((s) => s.hydrated);
   const token = useUserStore((s) => s.token);
-  const restoreSession = useUserStore((s) => s.restoreSession);
   const setHydrated = useUserStore((s) => s.setHydrated);
-  const [ready, setReady] = useState(false);
   const router = useRouter();
+  const { mutate: verifyToken } = useVerifyToken(); // ✅ safe now
+  const [ready, setReady] = useState(false);
 
-  // ✅ Always call hooks unconditionally
+  // Restore token and verify once
   useEffect(() => {
     const init = async () => {
       try {
-        const token = await AsyncStorage.getItem("auth_token");
-        console.log(token);
-        await restoreSession(); // Restore token/user from storage
+        const storedToken = (await AsyncStorage.getItem("auth_token")) || token;
+        console.log("Stored token: at _layout", storedToken);
+        if (storedToken) {
+          verifyToken(); // runs only once
+        }
       } catch (err) {
-        console.warn("Failed to restore session", err);
+        Toast.show({ type: "error", text1: "Initialization error", text2: "Failed to initialize app" });
       } finally {
-        setHydrated(); // Flip Zustand hydrated flag
-        setReady(true); // Ready to navigate
+        setHydrated();
+        setReady(true);
       }
     };
     init();
   }, []);
 
-  // ✅ Navigation effect
+  // Navigation logic
   useEffect(() => {
     if (!ready) return;
-    // Instead of router.replace, use router.push inside useEffect
-    if (!token) {
-      router.push("/index"); // safe navigation
+
+    const user = useUserStore.getState().user;
+
+    if (!token || !user) {
+      router.replace("/Login");
+      return;
     }
-    console.log(token);
-    const user = useUserStore.getState().user; // direct access (no re-render)
 
-
-    if (!user) return; // still restoring
-    if (user.role !== "admin") {
-      router.push("/(tabs)/Home"); // safe navigation
-    } else {
-      router.push("/(tabs)/Dashboard");
+    if (user.role === "admin") {
+      Toast.show({
+        type: "error",
+        text1: "Access Denied",
+        text2: "Admin login prohibited on mobile app.",
+      });
+      AsyncStorage.removeItem("auth_token");
+      useUserStore.getState().logout?.();
+      router.replace("/Login");
+      return;
     }
-  }, [ready, token, router]);
 
-  // ✅ Conditional rendering only, not hooks
-  if (!hydrated || !ready) {
-    return <SplashScreen />;
-  }
+    router.replace("/(tabs)/Home");
+  }, [ready, token]);
+
+  if (!hydrated || !ready) return <SplashScreen />;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <SafeAreaView className="flex-1 bg-[#FFF8E7]">
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(profile)" options={{ headerShown: false }} />
-        </Stack>
-      </SafeAreaView>
-    </QueryClientProvider>
+    <SafeAreaView className="flex-1 bg-[#FFF8E7]">
+      <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(profile)" options={{ headerShown: false }} />
+      </Stack>
+      <Toast />
+    </SafeAreaView>
   );
-}
+};

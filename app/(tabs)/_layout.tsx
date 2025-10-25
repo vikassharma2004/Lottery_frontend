@@ -1,32 +1,13 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Tabs } from "expo-router";
-import { adminTabs, userTabs } from "@/constants/tabs";
 import { Ionicons } from "@expo/vector-icons";
 import COLORS from "@/constants/Colors";
-import { useUserStore } from "@/store/AuthStore";
+import { StatusBar } from "expo-status-bar";
+
 export default function TabLayout() {
-  const {user}=useUserStore();
-  // Replace with your actual auth context/state later
-  const userRole = user?.role;
-
-  const tabs = useMemo(
-    () => (userRole === "admin" ? adminTabs : userTabs),
-    [userRole]
-  );
-
-  // Helper to check if tab should be visible
-  const isVisible = (name: string): boolean =>
-    tabs.some((tab) => tab.name === name);
-
-  // Helper to get the icon for a tab
-  const getIcon = (name: string) => {
-    const tab = tabs.find((t) => t.name === name);
-    return tab ? tab.icon : "alert"; // fallback icon
-  };
-
   return (
     <>
-      
+     <StatusBar style="dark" backgroundColor="black" />
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -34,7 +15,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: COLORS.TEXT_SECONDARY,
         tabBarLabelStyle: { fontSize: 12, fontWeight: "bold" },
         tabBarStyle: {
-          backgroundColor: COLORS.BACKGROUND, // visible background
+          backgroundColor: COLORS.BACKGROUND,
           position: "absolute",
           bottom: 5,
           left: 10,
@@ -42,105 +23,49 @@ export default function TabLayout() {
           height: 65,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
-          borderWidth: 0,
-          elevation: 5, // for Android shadow
-          shadowColor: COLORS.SHADOW, // iOS shadow
+          elevation: 5,
+          shadowColor: COLORS.SHADOW,
           shadowOpacity: 0.3,
           shadowOffset: { width: 0, height: 5 },
           shadowRadius: 5,
         },
       }}
     >
-      {/* User tabs */}
+      {/* Home */}
       <Tabs.Screen
         name="Home"
         options={{
           title: "Home",
-          headerShown: false,
-          href: isVisible("Home") ? undefined : null,
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={getIcon("Home") as any} size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="ReferEarn"
-        options={{
-          title: "Refer",
-          headerShown: false,
-          href: isVisible("ReferEarn") ? undefined : null,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name={getIcon("ReferEarn") as any}
-              size={size}
-              color={color}
-            />
+            <Ionicons name="home-outline" size={size} color={color} />
           ),
         }}
       />
 
-      {/* Admin tabs */}
+      {/* Refer & Earn */}
       <Tabs.Screen
-        name="Dashboard"
+        name="ReferEarn"
         options={{
-          title: "Dashboard",
-          headerShown: false,
-          href: isVisible("Dashboard") ? undefined : null,
+          title: "Refer",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name={getIcon("Dashboard") as any}
-              size={size}
-              color={color}
-            />
+            <Ionicons name="gift-outline" size={size} color={color} />
           ),
         }}
       />
-      <Tabs.Screen
-        name="Users"
-        options={{
-          title: "Users",
-          headerShown: false,
-          href: isVisible("Users") ? undefined : null,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name={getIcon("Users") as any}
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="Payments"
-        options={{
-          title: "Payments",
-          headerShown: false,
-          href: isVisible("Payments") ? undefined : null,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name={getIcon("Payments") as any}
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      />
+
+     
+
+      {/* Profile */}
       <Tabs.Screen
         name="Profile"
         options={{
           title: "Profile",
-          headerShown: false,
-          href: isVisible("Profile") ? undefined : null,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name={getIcon("Profile") as any}
-              size={size}
-              color={color}
-            />
+            <Ionicons name="person-circle-outline" size={size} color={color} />
           ),
         }}
       />
     </Tabs>
-        </>
+            </>
   );
 }

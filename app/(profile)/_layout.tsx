@@ -7,8 +7,7 @@ export default function ProfileLayout() {
       <StatusBar style="auto" backgroundColor="black" />
       <Stack
         screenOptions={{
-          headerShown: false, // ✅ show header
-           
+          headerShown: false, // ✅ show header 
         }}
       >
         <Stack.Screen name="ContactDetails" options={{ title: "Contact Details" }} />
@@ -16,7 +15,6 @@ export default function ProfileLayout() {
         <Stack.Screen name="ReportIssue" options={{ title: "Report Issue" }} />
         <Stack.Screen name="ChangePassword" options={{ title: "Change Password" }} />
         <Stack.Screen name="PaymentHistory" options={{ title: "Payment History" }} />
-        <Stack.Screen name="Sessions" options={{ title: "Sessions" }} />
       </Stack>
     </>
   );

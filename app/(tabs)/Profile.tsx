@@ -16,13 +16,7 @@ import { Link, useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AppModal from "@/components/AppModal";
 import { useUserStore } from "../../store/AuthStore.js";
-// const { hydrated, token } = useUserStore();
-
-// if (!hydrated) return <SplashScreen />;  // or null, loader, etc.
-// if (!token) return <LoginScreen />;
-// return <HomeScreen />;
-
-// Example: replace this with role from auth/user context
+import { useMemo } from "react";
 let currentUserRole;
 
 interface SettingsItemProps {
@@ -60,8 +54,8 @@ const SettingsItemRow = ({
 );
 
 const Profile = () => {
-  const router = useRouter();
-  const { user, hydrated, getProfile, logout, loading } = useUserStore();
+const router = useRouter();
+  const { user, token, hydrated, getProfile, logout, loading, clearAuth } = useUserStore();
 
   const [notifications, setNotifications] = useState([
     { id: 1, message: "Payment received", read: false },
@@ -69,11 +63,26 @@ const Profile = () => {
   ]);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
   const currentUserRole = user?.role || "user";
-  const filteredSettings: SettingItem[] = settings.filter(
-    (item) => item.role === currentUserRole
+
+  const filteredSettings = useMemo(
+    () => settings.filter((item) => item.role === currentUserRole),
+    [currentUserRole]
   );
+
+  // ✅ Navigation & state side effects
+  useEffect(() => {
+    if (!hydrated) return; // wait for store hydration
+
+    if (!user || !token) {
+      clearAuth(); // safely called inside useEffect
+      router.replace("/Login");
+    }
+  }, [user, token, hydrated, clearAuth, router]);
+
+  if (!user || !token) return null; // render nothing while redirecting
 
   return (
     <SafeAreaView className="flex-1 bg-[#FFF8E7]">
@@ -117,7 +126,7 @@ const Profile = () => {
             <Text className="text-2xl font-rubik-bold mt-2 text-[#212121]">
               Hello,{" "}
               {user?.email?.split("@")[0].charAt(0).toUpperCase() +
-                user.email.split("@")[0].slice(1)}
+                user?.email.split("@")[0].slice(1)}
               
             </Text>
           </View>
