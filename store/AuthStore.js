@@ -83,6 +83,7 @@ export const useUserStore = create(
             verifyToken: async () => {
                 try {
                     const res = await AuthAPI.verifyToken();
+                    
                     return res.valid || false;
                 } catch {
                     return false;
@@ -177,41 +178,45 @@ export const useUserStore = create(
                 }
             },
             // --- OTP ---
-  generateOtp: async (email) => {
-    set({ loading: true, error: null });
-    try {
-      const res = await AuthAPI.generateOtp({ email });
-      Toast.show({ type: "success", text1: "OTP sent" });
-      return res;
-    } catch (err) {
-      Toast.show({
-        type: "error",
-        text1: "Failed to send OTP",
-        text2: err.message,
-      });
-      return null;
-    } finally {
-      set({ loading: false });
-    }
-  },
+            generateOtp: async (email,type) => {
+                console.log("generateOtp called with", email);
+                set({ loading: true, error: null });
+                try {
+                    const res = await AuthAPI.generateOtp({ email,type });
+                    console.log("OTP generated:", res);
+                    Toast.show({ type: "success", text1: "OTP sent" });
+                    return res;
+                } catch (err) {
+                    Toast.show({
+                        type: "error",
+                        text1: "Failed to send OTP",
+                        text2: err.message,
+                    });
+                    return null;
+                } finally {
+                    set({ loading: false });
+                }
+            },
 
-  verifyOtp: async ({ email, otp }) => {
-    set({ loading: true, error: null });
-    try {
-      const res = await AuthAPI.verifyOtp({ email, otp });
-      Toast.show({ type: "success", text1: "OTP verified" });
-      return res;
-    } catch (err) {
-      Toast.show({
-        type: "error",
-        text1: "OTP verification failed",
-        text2: err.message,
-      });
-      return null;
-    } finally {
-      set({ loading: false });
-    }
-  },
+            verifyOtp: async ( email, otp ) => {
+                console.log("verifyOtp called with", email, otp);
+                set({ loading: true, error: null });
+                try {
+                    const res = await AuthAPI.verifyOtp({ email, otp });
+                    console.log("OTP verified:", res);
+                    Toast.show({ type: "success", text1: "OTP verified" });
+                    return res;
+                } catch (err) {
+                    Toast.show({
+                        type: "error",
+                        text1: "OTP verification failed",
+                        text2: err.message,
+                    });
+                    return null;
+                } finally {
+                    set({ loading: false });
+                }
+            },
         }),
         {
             name: 'user-storage',

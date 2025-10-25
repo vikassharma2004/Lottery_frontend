@@ -1,61 +1,96 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 export default function ContactDetails() {
   const [isEditing, setIsEditing] = useState(false);
+
   const [user, setUser] = useState({
-    email: "user@example.com",
-    phone: "+91 9876543210",
-    paymentStatus: "Paid",
-    emailVerified: true,
-    tickets: 3,
+    createdAt: "2025-10-24T15:30:57.314Z",
+    email: "vikasfixel@gmail.com",
+    hasPaid: false,
+    id: "68fb9bb19639608f4fec974d",
+    isSuspended: false,
+    isVerified: true,
+    referralCode: null,
+    referralCount: 0,
+    role: "admin",
+    successfulReferrals: 0,
+    ticketCount: 0,
+    walletBalance: 0,
   });
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
   };
 
-  const handleChange = (field: keyof typeof user, value: string) => {
+  const handleChange = (field, value) => {
     setUser({ ...user, [field]: value });
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View className="flex-row items-center justify-between mb-6">
-          <Text className="text-2xl font-bold text-gray-800">Profile Details</Text>
-
-          <TouchableOpacity
-            onPress={handleEditToggle}
-            className="bg-blue-500 px-4 py-2 rounded-xl flex-row items-center active:bg-blue-600"
-          >
-            <Ionicons
-              name={isEditing ? "checkmark-circle-outline" : "create-outline"}
-              size={18}
-              color="white"
+        {/* Header Section */}
+        <View className="items-center mt-6">
+          <View className="relative">
+            <Image
+              source={{
+                uri: "https://i.pravatar.cc/150?img=12",
+              }}
+              className="w-28 h-28 rounded-full border-4 border-blue-500"
             />
-            <Text className="text-white ml-2 font-semibold">
-              {isEditing ? "Save" : "Edit"}
+            <TouchableOpacity
+              onPress={handleEditToggle}
+              className="absolute bottom-0 right-1 bg-blue-500 p-2 rounded-full shadow"
+            >
+              <Ionicons
+                name={isEditing ? "checkmark" : "create-outline"}
+                size={18}
+                color="white"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <Text className="text-2xl font-bold text-gray-800 mt-4">
+            {user.email.split("@")[0]}
+          </Text>
+          <Text className="text-gray-500 capitalize">{user.role}</Text>
+
+          <View className="mt-3 bg-blue-50 px-4 py-2 rounded-full flex-row items-center">
+            <Ionicons name="wallet-outline" size={16} color="#2563EB" />
+            <Text className="ml-2 text-blue-600 font-semibold">
+              ₹{user.walletBalance}
             </Text>
-          </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Profile Card */}
-        <View className="bg-gray-50 rounded-2xl p-5 shadow-sm border border-gray-200">
+        {/* Profile Info Card */}
+        <Animated.View
+          entering={FadeIn}
+          exiting={FadeOut}
+          className="mt-8 bg-gray-50 rounded-2xl p-5 shadow-sm border border-gray-200"
+        >
           {/* Email */}
-          <View className="mb-4">
+          <View className="mb-5">
             <Text className="text-gray-500 mb-1">Email</Text>
             {isEditing ? (
               <TextInput
                 value={user.email}
                 onChangeText={(val) => handleChange("email", val)}
-                className="border border-gray-300 rounded-xl p-2 text-gray-800"
+                className="border border-gray-300 rounded-xl p-3 text-gray-800"
                 keyboardType="email-address"
               />
             ) : (
@@ -63,51 +98,58 @@ export default function ContactDetails() {
             )}
           </View>
 
-          {/* Phone */}
-          <View className="mb-4">
-            <Text className="text-gray-500 mb-1">Phone</Text>
-            {isEditing ? (
-              <TextInput
-                value={user.phone}
-                onChangeText={(val) => handleChange("phone", val)}
-                className="border border-gray-300 rounded-xl p-2 text-gray-800"
-                keyboardType="phone-pad"
-              />
-            ) : (
-              <Text className="text-gray-800 font-semibold">{user.phone}</Text>
-            )}
-          </View>
-
-          {/* Payment Status */}
-          <View className="mb-4">
-            <Text className="text-gray-500 mb-1">Payment Status</Text>
-            <Text
-              className={`font-semibold ${
-                user.paymentStatus === "Paid" ? "text-green-600" : "text-red-500"
-              }`}
-            >
-              {user.paymentStatus}
+          {/* Referral Code */}
+          <View className="mb-5">
+            <Text className="text-gray-500 mb-1">Referral Code</Text>
+            <Text className="text-gray-800 font-semibold">
+              {user.referralCode || "Not generated"}
             </Text>
           </View>
 
-          {/* Email Verified */}
-          <View className="mb-4">
-            <Text className="text-gray-500 mb-1">Email Verified</Text>
-            <Text
-              className={`font-semibold ${
-                user.emailVerified ? "text-green-600" : "text-red-500"
-              }`}
-            >
-              {user.emailVerified ? "Verified" : "Not Verified"}
+          {/* Tickets */}
+          <View className="mb-5">
+            <Text className="text-gray-500 mb-1">Ticket Count</Text>
+            <Text className="text-gray-800 font-semibold">
+              {user.ticketCount}
             </Text>
           </View>
 
-          {/* Ticket Purchased */}
+          {/* Verification */}
+          <View className="mb-5">
+            <Text className="text-gray-500 mb-1">Verification</Text>
+            <Text
+              className={`font-semibold ${
+                user.isVerified ? "text-green-600" : "text-red-500"
+              }`}
+            >
+              {user.isVerified ? "Verified" : "Not Verified"}
+            </Text>
+          </View>
+
+          {/* Status */}
           <View>
-            <Text className="text-gray-500 mb-1">Tickets Purchased</Text>
-            <Text className="text-gray-800 font-semibold">{user.tickets}</Text>
+            <Text className="text-gray-500 mb-1">Account Status</Text>
+            <Text
+              className={`font-semibold ${
+                user.isSuspended ? "text-red-500" : "text-green-600"
+              }`}
+            >
+              {user.isSuspended ? "Suspended" : "Active"}
+            </Text>
           </View>
-        </View>
+        </Animated.View>
+
+        {/* Save Changes Button */}
+        {isEditing && (
+          <TouchableOpacity
+            onPress={handleEditToggle}
+            className="mt-8 bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl py-4 shadow-lg"
+          >
+            <Text className="text-center text-white font-bold text-lg">
+              Save Changes
+            </Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

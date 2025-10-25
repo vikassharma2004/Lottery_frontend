@@ -58,7 +58,7 @@ export default function Login() {
       if (res?.message === "User email not verified") {
         router.push({
           pathname: "/OtpVerify",
-          params: { email: email },
+          params: { email: email,type:"verifyEmail" },
         });
         return;
       }

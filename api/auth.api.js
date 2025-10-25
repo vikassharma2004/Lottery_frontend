@@ -43,8 +43,9 @@ export const verifyToken = async () => {
   return res.data || res;
 };
 
-export const generateOtp = async (email) => {
+export const generateOtp = async (email,type) => {
   const res = await axiosClient.post("/otp/generate", { email });
+  console.log("generateOtp response:", res);
   return res.data || res;
 };
 

@@ -21,7 +21,7 @@ export default function RootLayout() {
   useEffect(() => {
     const init = async () => {
       try {
-        const token=await AsyncStorage.getItem('auth_token');
+        const token = await AsyncStorage.getItem("auth_token");
         console.log(token);
         await restoreSession(); // Restore token/user from storage
       } catch (err) {
@@ -39,21 +39,18 @@ export default function RootLayout() {
     if (!ready) return;
     // Instead of router.replace, use router.push inside useEffect
     if (!token) {
-      router.push("/(auth)/Login"); // safe navigation
-    } 
-     console.log(token);
-     const user = useUserStore.getState().user; // direct access (no re-render)
-   
-     console.log(user);
-    
-  if (!user) return; // still restoring
-  if(user.role !== "admin"){
-    
-    router.push("/(tabs)/Home"); // safe navigation
-  }else{
-    router.push("/(tabs)/Dashboard");
-  }
-    
+      router.push("/index"); // safe navigation
+    }
+    console.log(token);
+    const user = useUserStore.getState().user; // direct access (no re-render)
+
+
+    if (!user) return; // still restoring
+    if (user.role !== "admin") {
+      router.push("/(tabs)/Home"); // safe navigation
+    } else {
+      router.push("/(tabs)/Dashboard");
+    }
   }, [ready, token, router]);
 
   // ✅ Conditional rendering only, not hooks
