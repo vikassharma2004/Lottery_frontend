@@ -15,11 +15,15 @@ import { useRouter } from "expo-router";
 import PaymentModal from "@/components/PaymentModal";
 import { useUserStore } from "@/store/AuthStore";
 import Toast from "react-native-toast-message";
+import RazorpayCheckout from 'react-native-razorpay';
+import { useCreateRazorpayOrder, useVerifyRazorpayPayment } from "@/hooks/Auth";
 
 const ReferEarn = () => {
   const router = useRouter();
   const { user } = useUserStore();
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
+   const createOrderMutation = useCreateRazorpayOrder();
+  const verifyPaymentMutation = useVerifyRazorpayPayment();
 
   const handleReferFriend = async () => {
     try {
@@ -31,6 +35,47 @@ const ReferEarn = () => {
   };
 
   const handleMakePayment = () => setPaymentModalVisible(true);
+   const handlePayment = async () => {
+    try {
+      // 1️⃣ Create Razorpay order
+      const data = await createOrderMutation.mutateAsync();
+      const { order, razorpayKeyId, prefill } = data;
+      console.log('Razorpay Order created:', data);
+
+      // 2️⃣ Open Razorpay checkout
+      const options = {
+        key: razorpayKeyId,
+        amount: order.amount,
+        currency: order.currency,
+        order_id: order.id,
+        name: 'Spin The Wheel',
+        description: 'Pay to unlock referral rewards',
+        prefill,
+        theme: { color: '#F37254' },
+      };
+
+      RazorpayCheckout.open(options)
+        .then(async (response: any) => {
+          // 3️⃣ Verify payment
+          const verifyResponse =
+          {
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpayOrderId: response.razorpay_order_id,
+            razorpaySignature: response.razorpay_signature,
+          }
+          await verifyPaymentMutation.mutateAsync({verifyResponse});
+
+          setPaymentModalVisible(false); 
+        })
+        .catch(() => {
+          // Payment failed or cancelled
+          setPaymentModalVisible(false);
+        });
+    } catch (err) {
+      console.log('Payment error:', err);
+      setPaymentModalVisible(false);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#FFF8E7]">
@@ -130,8 +175,7 @@ const ReferEarn = () => {
         title="Payment"
         description="Pay ₹500 to unlock your referral code and start earning rewards."
         onConfirm={() => {
-          console.log("Payment confirmed");
-          setPaymentModalVisible(false);
+          handlePayment();
         }}
       />
       <Toast />

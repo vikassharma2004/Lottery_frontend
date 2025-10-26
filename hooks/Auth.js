@@ -153,3 +153,59 @@ export const useLogout = () => {
     },
   });
 };
+export const useCreateRazorpayOrder = () => {
+  return useMutation({
+    mutationFn: () => WithdrawAPI.createRazorpayOrder(),
+    onSuccess: (data) => {
+      Toast.show({
+        type: 'success',
+        text1: 'Order Created',
+        text2: 'Razorpay order created successfully',
+        position: 'top',
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    },
+    onError: (error) => {
+      console.log('Create order error:', error);
+      const message =
+        error?.response?.data?.message || 'Failed to create Razorpay order';
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: message,
+        position: 'top',
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    },
+  });
+};
+export const useVerifyRazorpayPayment = () => {
+  return useMutation({
+    mutationFn: (payload) => WithdrawAPI.verifyRazorpayPayment(payload),
+    onSuccess: (data) => {
+      Toast.show({
+        type: 'success',
+        text1: 'Payment Verified',
+        text2: data?.message || 'Payment verified successfully',
+        position: 'top',
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    },
+    onError: (error) => {
+      console.log('Verify payment error:', error);
+      const message =
+        error?.response?.data?.message || 'Payment verification failed';
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: message,
+        position: 'top',
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    },
+  });
+};

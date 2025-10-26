@@ -13,4 +13,13 @@ export const getUserWithdrawRequests = async () => {
 };
 
 
+// payemnt methods
+export const createRazorpayOrder = async () => {
+  const { data } = await axiosClient.post("/payment/order");
+  return data;
+};
+export const verifyRazorpayPayment = async (payload) => {
+  const { data } = await axiosClient.post("/payment/verify-payment", payload);
+  return data;
+};
 
