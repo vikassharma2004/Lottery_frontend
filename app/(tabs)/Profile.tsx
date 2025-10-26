@@ -17,6 +17,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AppModal from "@/components/AppModal";
 import { useUserStore } from "../../store/AuthStore.js";
 import { useMemo } from "react";
+import { useLogout } from "@/hooks/Auth.js";
 let currentUserRole;
 
 interface SettingsItemProps {
@@ -55,8 +56,8 @@ const SettingsItemRow = ({
 
 const Profile = () => {
 const router = useRouter();
-  const { user, token, hydrated, getProfile, logout, loading, clearAuth } = useUserStore();
-
+  const { user, token, hydrated, getProfile, clearAuth } = useUserStore();
+const { mutate: logout, isPending } = useLogout();
   const [notifications, setNotifications] = useState([
     { id: 1, message: "Payment received", read: false },
     { id: 2, message: "New job posted", read: true },
@@ -162,8 +163,10 @@ const router = useRouter();
           message="Are you sure you want to logout from the app?"
           confirmText="Logout"
           cancelText="Cancel"
-          onConfirm={() => {
-            logout();
+          onConfirm={async() => {
+           await logout();
+           await clearAuth();
+            router.replace("/Login");
             setLogoutModalVisible(false);
           }}
         />

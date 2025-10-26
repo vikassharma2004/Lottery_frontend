@@ -27,11 +27,6 @@ const Home = () => {
   // 🚫 Redirect if user not logged in
   useEffect(() => {
     if (!token || !user) {
-      Toast.show({
-        type: "error",
-        text1: "Access Denied",
-        text2: "You need to log in to access the homepage.",
-      });
       router.replace("/Login");
     }
   }, [token, user]);
@@ -67,7 +62,7 @@ const Home = () => {
           <Text className="text-2xl font-bold text-yellow-700 mb-5">App Features</Text>
           {features.map((f) => (
             <View key={f.id} className="flex-row bg-white rounded-xl p-4 mb-4 shadow-md items-center">
-              <Image source={require("../../assets/images/Support.png")} className="w-full" resizeMode="cover" />
+              <Image source={require("../../assets/images/Support.png")} className="w-5 h-5" resizeMode="cover" />
               <View className="flex-1">
                 <Text className="font-semibold text-lg text-gray-800">{f.title}</Text>
                 <Text className="text-gray-600 text-sm mt-1">{f.description}</Text>

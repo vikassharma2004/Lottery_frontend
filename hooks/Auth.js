@@ -1,6 +1,7 @@
 // src/hooks/useLogin.js
 import { useMutation, useQuery } from '@tanstack/react-query';
 import * as AuthAPI from '../api/auth.api.js';
+import * as WithdrawAPI from '../api/withdraw.api.js';
 import { useUserStore } from '../store/AuthStore.js';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -71,6 +72,83 @@ export const useProfile = () => {
         type: "error",
         text1: "Failed to fetch profile",
         text2: err?.message || "Please try again",
+      });
+    },
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: (payload) => AuthAPI.ChnagePassword(payload),
+    onSuccess: () => {
+      Toast.show({
+        type: "success",
+        text1: "Password changed successfully",
+      });
+    },
+    onError: (error) => {
+      const message =
+        error?.response?.data?.message || "Failed to change password";
+      Toast.show({
+        type: "error",
+        text1: message,
+      });
+    },
+  });
+};
+export const useCreateWithdrawRequest = () => {
+  return useMutation({
+    mutationFn: ({ amount, upiId }) =>
+      WithdrawAPI.createWithdrawRequest(amount, upiId),
+    onSuccess: (data) => {
+      Toast.show({
+        type: "success",
+        text1: "Success",
+        text2: data?.message || "Withdraw request created successfully",
+        position: "top",
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    },
+    onError: (error) => {
+      console.log("Withdraw request error:", error);
+      const message =
+        error?.response?.data?.message || "Failed to create withdraw request";
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: message ,
+        position: "top",
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    },
+  });
+};
+export const useLogout = () => {
+  return useMutation({
+    mutationFn: () => AuthAPI.logoutUser(),
+    onSuccess: (data) => {
+      Toast.show({
+        type: "success",
+        text1: "Logged out successfully",
+        position: "top",
+        visibilityTime: 2500,
+        autoHide: true,
+      });
+     
+      
+    },
+    onError: (error) => {
+      const message =
+        error?.response?.data?.message || "Failed to log out";
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: message,
+        position: "top",
+        visibilityTime: 2500,
+        autoHide: true,
       });
     },
   });

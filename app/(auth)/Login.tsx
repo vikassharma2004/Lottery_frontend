@@ -53,44 +53,14 @@ const { mutate: loginUser, isPending } = useLogin();
       });
       return;
     }
-
     setScreenLoading(true);
      await loginUser({ email, password });
-    // const res = await login({ email, password });
-    // console.log(user);
     setScreenLoading(false);
 
-    // if (!res || res.error) {
-    //   if (res?.message === "User email not verified") {
-    //     router.push({
-    //       pathname: "/OtpVerify",
-    //       params: { email, type: "verifyEmail" },
-    //     });
-    //     return;
-    //   }
-    //   if (res?.message === "Account suspended. Contact support.") {
-    //     Toast.show({ type: "error", text1: res.message });
-    //     return;
-    //   }
-    //   Toast.show({ type: "error", text1: res?.message || "Login failed" });
-    //   return;
-    // }
-
-    // if (res.user?.role === "admin") {
-    //   Toast.show({
-    //     type: "error",
-    //     text1: "Access denied",
-    //     text2: "Admin access not allowed on mobile app.",
-    //   });
-    //   return;
-    // }
-
-    // Toast.show({ type: "success", text1: "Login successful!" });
-    // setTimeout(() => router.replace("/Home"), 800);
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FFF8E7]">
+   <SafeAreaView className="flex-1 bg-[#FFF8E7]">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
@@ -107,7 +77,7 @@ const { mutate: loginUser, isPending } = useLogin();
           <View className="items-center mb-10">
             <Image
               source={require("../../assets/images/Auth.png")}
-              className="w-full h-72"
+              className="w-full h-64"
               resizeMode="contain"
             />
           </View>
@@ -125,7 +95,7 @@ const { mutate: loginUser, isPending } = useLogin();
           </View>
 
           {/* Password */}
-          <View className="relative mb-4">
+          <View className="relative mb-6">
             <TextInput
               value={password}
               onChangeText={setPassword}
@@ -145,29 +115,34 @@ const { mutate: loginUser, isPending } = useLogin();
             </TouchableOpacity>
           </View>
 
-          {/* Login button */}
+          {/* Login Button */}
           <TouchableOpacity
             onPress={handleLogin}
-            disabled={isPending || screenLoading}
-            className={`bg-yellow-500 py-4 rounded-xl items-center ${
+            disabled={isPending}
+            className={`bg-yellow-500 py-4 rounded-xl items-center mb-4 ${
               isPending ? "opacity-70" : ""
             }`}
           >
             <Text className="text-black font-bold text-lg">
-              {isPending ? <ActivityIndicator color={"black"} /> : "Login"}
+              {isPending ? <ActivityIndicator color="black" /> : "Login"}
             </Text>
           </TouchableOpacity>
 
-          {/* Sign up link */}
-          <TouchableOpacity
-            onPress={() => router.push("/SignUp")}
-            className="items-center mt-4"
-          >
-            <Text className="text-[#43A047] font-semibold text-center">
-              Don't have an account?{" "}
-              <Text className="text-[#FFB800] underline">Sign Up</Text>
-            </Text>
-          </TouchableOpacity>
+          {/* Bottom Links */}
+          <View className="flex-row justify-between mt-2">
+            <TouchableOpacity onPress={() => router.push("/SignUp")}>
+              <Text className="text-[#43A047] font-semibold text-sm">
+                Don't have an account?{" "}
+                <Text className="text-[#FFB800] underline">Sign Up</Text>
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => router.push("/ResetPassword")}>
+              <Text className="text-[#FFB800] font-semibold text-sm">
+                Forgot Password?
+              </Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
       <Toast />

@@ -41,6 +41,7 @@ export const useUserStore = create(
                     // clear persisted storage
                     await AsyncStorage.removeItem('auth_token');
                     await AsyncStorage.removeItem('user-storage'); // clear Zustand persist storage
+                      set({ token: null, user: null, loading: false, error: null, message: null });
                 } catch (err) {
                     console.error('Failed to clear auth storage', err);
                 } finally {

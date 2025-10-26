@@ -5,6 +5,11 @@ export const registerUser = async (payload) => {
   const { data } = await axiosClient.post('/auth/register', payload);
   return data;
 };
+export const ChnagePassword = async (payload) => {
+  
+  const { data } = await axiosClient.post('/auth/change-password', payload);
+  return data;
+}
 
 // Login
 export const loginUser = async (payload) => {
