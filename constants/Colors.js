@@ -1,17 +1,19 @@
 // COLORS.JS
 const COLORS = {
-  PRIMARY: "#FFB800",        // Gold - main CTA, active tabs, reward highlights
-  SECONDARY: "#43A047",      // Green - success, confirmations, badges
-  BACKGROUND: "#FFF8E7",     // Light cream - app background
-  TEXT: "#212121",            // Dark gray - main text
-  TEXT_SECONDARY: "#757575",  // Medium gray - placeholders, hints
-  CARD: "#FFFFFF",            // White - cards, containers
-  BORDER: "#BDBDBD",          // Light gray - dividers and borders
-  SHADOW: "#BDBDBD",          // Subtle shadow for depth
-  WHITE: "#FFFFFF",           // Plain white for text/buttons
-  ERROR: "#E53935",           // Red - errors / negative states
-  WARNING: "#FF9800",         // Orange - alerts / attention
-  SUCCESS: "#43A047",         // Green - confirmations, earned points
+  PRIMARY: "#FFB800",       // Gold - main CTAs and highlights
+  SECONDARY: "#43A047",     // Green - success, confirmation
+  ACCENT: "#3B82F6",        // Blue - links, info icons (adds balance)
+  BACKGROUND: "#FFF5DB",    // Slightly deeper cream for contrast
+  CARD: "#FFFFFF",          // Cards, modals
+  TEXT: "#1E1E1E",          // Main text
+  TEXT_SECONDARY: "#757575",// Subtext / hints
+  BORDER: "#E0E0E0",        // Subtle border
+  SHADOW: "rgba(0,0,0,0.08)", // Light shadow
+  ERROR: "#E53935",         // Error
+  WARNING: "#FF9800",       // Warning
+  SUCCESS: "#43A047",       // Success
+  WHITE: "#FFFFFF",
+  BLACK: "#000000",
 };
 
 export default COLORS;

@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import Toast from "react-native-toast-message";
 
 export default function AuthLayout() {
   return (
@@ -11,6 +12,7 @@ export default function AuthLayout() {
         <Stack.Screen name="OtpVerify" />
         <Stack.Screen name="ResetPassword" />
       </Stack>
+      <Toast/>
     </>
   );
 }

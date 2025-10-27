@@ -6,6 +6,7 @@ import { useUserStore } from "../../store/AuthStore";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 
+
 const features = [
   { id: 1, title: "Refer Friends", description: "Invite your friends and earn rewards for each successful referral.", icon: require("../../assets/images/Refer.png") },
   { id: 2, title: "Track Rewards", description: "Easily monitor your earnings and track your referrals in real-time.", icon: require("../../assets/images/Refer.png") },
@@ -29,6 +30,7 @@ const Home = () => {
     if (!token || !user) {
       router.replace("/Login");
     }
+   
   }, [token, user]);
 
   if (!token || !user) return null; // prevent rendering before redirect
@@ -44,7 +46,7 @@ const Home = () => {
             resizeMode="contain"
           />
           <Text className="text-3xl font-bold text-yellow-800 text-center mt-5">
-            Earn Rewards by Referring Friends
+            Earn Rewards by Referring Friends dfgdfg
           </Text>
           <Text className="text-center text-gray-700 mt-2">
             Invite your friends, complete tasks, and earn amazing rewards instantly!

@@ -7,34 +7,33 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import COLORS from "@/constants/Colors";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useUserStore } from "@/store/AuthStore";
-
+import Toast from "react-native-toast-message";
+import { useVerifyOtp,useGenerateOtp } from "@/hooks/Auth";
 const OtpVerify: React.FC = () => {
-  const { email,type } = useLocalSearchParams<{ email: string }>(); // typed param
+  const { email, action } = useLocalSearchParams<{ email: string; action: string }>(); // keep lowercase since router params are lowercase
   const router = useRouter();
 
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const inputs = useRef<(TextInput | null)[]>([]);
   const [timer, setTimer] = useState<number>(0);
+  const inputs = useRef<(TextInput | null)[]>([]);
 
-  const { verifyOtp, loading, generateOtp } = useUserStore();
+  // ✅ Correct usage of React Query hooks
+  const { mutateAsync: verifyOtp, isPending: isVerifying } = useVerifyOtp();
+  const { mutateAsync: generateOtp, isPending: isGenerating } = useGenerateOtp();
 
-  // Countdown timer logic
+ // Countdown logic
   useEffect(() => {
     if (timer <= 0) return;
-    const interval = setInterval(() => {
-      setTimer((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
+    const interval = setInterval(() => setTimer((prev) => Math.max(prev - 1, 0)), 1000);
     return () => clearInterval(interval);
   }, [timer]);
 
-  // Handle OTP input changes
+  // Handle OTP change
   const handleChange = (text: string, index: number) => {
-    const cleanText = text.replace(/[^0-9]/g, "").slice(-1); // only digits
+    const cleanText = text.replace(/[^0-9]/g, "").slice(-1);
     const newOtp = [...otp];
     newOtp[index] = cleanText;
     setOtp(newOtp);
@@ -44,45 +43,55 @@ const OtpVerify: React.FC = () => {
     }
   };
 
-  // Handle backspace navigation
+  // Handle backspace
   const handleKeyPress = (e: any, index: number) => {
     if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
       inputs.current[index - 1]?.focus();
     }
   };
 
-  // Verify OTP submission
+  // ✅ Verify OTP
   const handleVerify = async () => {
     const enteredOtp = otp.join("");
 
     if (enteredOtp.length < 6) {
-      Alert.alert("Error", "Please enter the complete 6-digit OTP.");
+      Toast.show({
+        type: "info",
+        text1: "Please enter the complete 6-digit OTP",
+      });
       return;
-    }
-
-    try {
-      let otp=enteredOtp;
-      console.log("Verifying OTP for", email, otp);
-      const res = await verifyOtp({ email, otp,type });
-      if (res) {
-        Alert.alert("Success", "OTP verified successfully!");
-        router.replace("/Home");
-      } else {
-        Alert.alert("Error", "Invalid OTP. Please try again.");
-      }
-    } catch (err) {
-      Alert.alert("Error", "Verification failed. Please try again.");
+    } try {
+      console.log("Verifying OTP for email:", email, "with OTP:", enteredOtp);
+       await verifyOtp({ email, otp: enteredOtp, type: action }); // ✅ Correct payload
+      Toast.show({
+        type: "success",
+        text1: "OTP verified successfully",
+      });
+      router.replace("/Login");
+    } catch (err: any) {
+      Toast.show({
+        type: "error",
+        text1: err?.response?.data?.message || "Invalid OTP. Please try again.",
+      });
     }
   };
 
-  // Resend OTP
+  // ✅ Resend OTP
   const handleResend = async () => {
     try {
-      await generateOtp(email,type );
-      setTimer(30);
-      Alert.alert("OTP Sent", "A new OTP has been sent to your email.");
+    const data=  await generateOtp({ email, type: action }); // ✅ Correct payload
+    console.log("Resent OTP for email:", email, "with OTP:", data);
+       Toast.show({
+        type: "success",
+        text1: "OTP resent successfully",
+      });
+      setTimer(60);
+     
     } catch (err) {
-      Alert.alert("Error", "Failed to resend OTP. Try again later.");
+      Toast.show({
+        type: "error",
+        text1: "Failed to resend OTP. Try again later.",
+      });
     }
   };
 
@@ -118,6 +127,7 @@ const OtpVerify: React.FC = () => {
             key={index}
             ref={(ref) => (inputs.current[index] = ref)}
             value={value}
+             placeholderTextColor="#999999" // explicit color
             onChangeText={(text) => handleChange(text, index)}
             onKeyPress={(e) => handleKeyPress(e, index)}
             keyboardType="number-pad"
@@ -144,14 +154,14 @@ const OtpVerify: React.FC = () => {
         className="rounded-xl py-3 mb-4"
         style={{
           backgroundColor:
-            otp.join("").length < 6 || loading
+            otp.join("").length < 6 || isVerifying
               ?  "#ccc"
               : COLORS.PRIMARY,
         }}
         onPress={handleVerify}
-        disabled={loading || otp.join("").length < 6}
+        disabled={isVerifying || otp.join("").length < 6}
       >
-        {loading ? (
+        {isVerifying ? (
           <ActivityIndicator color="#212121" />
         ) : (
           <Text className="text-center text-[#212121] text-lg font-bold">
@@ -167,8 +177,8 @@ const OtpVerify: React.FC = () => {
         className={`mt-2 ${timer > 0 ? "opacity-50" : "opacity-100"}`}
       >
         <Text
-          className={`text-center text-md font-bold ${
-            timer > 0 ? "text-gray-500" : "text-red-500"
+          className={`text-right text-[#212121] text-sm font-bold ${
+            timer > 0 ? "text-gray-500" : "text-blue-500"
           }`}
         >
           {timer > 0 ? `Resend OTP in ${timer}s` : "Resend OTP"}

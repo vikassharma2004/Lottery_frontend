@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { act, useState } from "react";
 import {
   View,
   TextInput,
@@ -23,7 +23,7 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [referralCode, setReferralCode] = useState("");
-const {register,loading} = useUserStore();
+  const { register, loading } = useUserStore();
 
   const handleSubmit = async () => {
     // Trim inputs
@@ -51,7 +51,7 @@ const {register,loading} = useUserStore();
       });
       return;
     }
-    if(trimmedPassword.length<6){
+    if (trimmedPassword.length < 6) {
       Toast.show({
         type: "error",
         text1: "Invalid password",
@@ -59,40 +59,44 @@ const {register,loading} = useUserStore();
       });
       return;
     }
-    if( trimmedReferral !== '' && trimmedReferral.length<8){
-    Toast.show({
-      type: "error",
-      text1: "Invalid referral code", 
-      text2: "Referral code must be at least 8 characters long.",
-    })  
+    if (trimmedReferral !== "" && trimmedReferral.length < 8) {
+      Toast.show({
+        type: "error",
+        text1: "Invalid referral code",
+        text2: "Referral code must be at least 8 characters long.",
+      });
     }
 
-  
-   const res=   await register({ email: trimmedEmail, password: trimmedPassword, referralCode: trimmedReferral });
-   if(res){
-    setEmail('');
-    setPassword('');
-    setReferralCode('');
-    router.push("/OtpVerify");
-   }
-  }
-  
+    const res = await register({
+      email: trimmedEmail,
+      password: trimmedPassword,
+      referralCode: trimmedReferral,
+    });
+    if (res) {
+      setEmail("");
+      setPassword("");
+      setReferralCode("");
+      router.push({
+        pathname: "/OtpVerify",
+        params: { email: trimmedEmail, action: "VerifyEmail" },
+      });
+    }
+  };
 
   return (
-     <ScrollView
-        contentContainerStyle={{ height:'100%' }}
-        keyboardShouldPersistTaps="handled"
-      >
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 "
+    <ScrollView
+      contentContainerStyle={{ height: "100%" }}
+      keyboardShouldPersistTaps="handled"
     >
-     
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1 "
+      >
         <SafeAreaView className="flex-1 h-full bg-[#FFF8E7] px-6 justify-center">
           {/* Top image */}
           <View className="items-center ">
             <Image
-              source={require('../../assets/images/Auth.png')}
+              source={require("../../assets/images/Auth.png")}
               className="w-full h-72"
               resizeMode="cover"
             />
@@ -103,6 +107,7 @@ const {register,loading} = useUserStore();
             <TextInput
               value={email}
               onChangeText={setEmail}
+              placeholderTextColor="#999999" // explicit color
               placeholder="Email"
               keyboardType="email-address"
               autoCapitalize="none"
@@ -111,6 +116,7 @@ const {register,loading} = useUserStore();
             <TextInput
               value={password}
               onChangeText={setPassword}
+              placeholderTextColor="#999999" // explicit color
               placeholder="Password"
               secureTextEntry
               className="border border-[#BDBDBD] rounded-lg px-4 py-3 text-[#212121] mb-5"
@@ -119,6 +125,7 @@ const {register,loading} = useUserStore();
               value={referralCode}
               onChangeText={setReferralCode}
               placeholder="Referral Code (optional)"
+              placeholderTextColor="#999999" // explicit color
               maxLength={8}
               className="border border-[#BDBDBD] rounded-lg px-4 py-3 text-[#212121] mb-5"
             />
@@ -150,8 +157,8 @@ const {register,loading} = useUserStore();
 
           <Toast />
         </SafeAreaView>
-    </KeyboardAvoidingView>
-      </ScrollView>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 };
 

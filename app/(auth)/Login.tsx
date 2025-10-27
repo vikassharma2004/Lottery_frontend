@@ -19,7 +19,7 @@ import {useLogin} from "../../hooks/Auth.js";
 export default function Login() {
   const router = useRouter();
   // const { loading, login, user } = useUserStore();
-const { mutate: loginUser, isPending } = useLogin();
+const { mutateAsync: loginUser, isPending } = useLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -54,7 +54,8 @@ const { mutate: loginUser, isPending } = useLogin();
       return;
     }
     setScreenLoading(true);
-     await loginUser({ email, password });
+   const data=  await loginUser({ email, password });
+   console.log("Login response data:", data);
     setScreenLoading(false);
 
   };
@@ -89,6 +90,7 @@ const { mutate: loginUser, isPending } = useLogin();
               onChangeText={setEmail}
               placeholder="Email"
               keyboardType="email-address"
+               placeholderTextColor="#999999" // explicit color
               autoCapitalize="none"
               className="border border-gray-300 rounded-lg px-4 py-3 text-[#212121] bg-white"
             />
@@ -99,9 +101,10 @@ const { mutate: loginUser, isPending } = useLogin();
             <TextInput
               value={password}
               onChangeText={setPassword}
+               placeholderTextColor="#999999" // explicit color
               placeholder="Password"
               secureTextEntry={!showPassword}
-              className="border border-gray-300 rounded-lg px-4 py-3 text-[#212121] bg-white"
+              className="border border-gray-300 rounded-lg px-4 py-3 text-black bg-white"
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}

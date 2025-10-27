@@ -9,8 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
-import { useCreateWithdrawRequest } from "@/hooks/Auth";
-
+import { useCreateWithdrawRequest, useFetchProfile } from "@/hooks/Auth";
 interface WithdrawRequestModalProps {
   visible: boolean;
   onClose: () => void;
@@ -22,9 +21,11 @@ export default function WithdrawRequestModal({
   onClose,
   walletBalance,
 }: WithdrawRequestModalProps) {
+  const { mutate: fetchProfile } = useFetchProfile();
   const [amount, setAmount] = useState("");
   const [upiId, setUpiId] = useState("");
   const { mutate: submitWithdraw, isPending } = useCreateWithdrawRequest();
+  
 
  
 
@@ -45,17 +46,20 @@ export default function WithdrawRequestModal({
       return;
     }
 
-   // ✅ Use onSuccess in mutate to reset fields
-  submitWithdraw(
-    { amount: amt, upiId },
-    {
-      onSuccess: () => {
-        setAmount("");
-        setUpiId("");
-        onClose(); // close modal
-      },
-    }
-  );
+ submitWithdraw(
+  { amount: amt, upiId },
+  {
+    onSuccess: async () => {
+      setAmount("");
+      setUpiId("");
+        // ✅ Trigger manual profile refresh after success
+        fetchProfile();
+      onClose();
+    },
+  }
+);
+
+  
 };
   
   return (

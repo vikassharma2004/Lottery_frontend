@@ -1,29 +1,63 @@
 // src/hooks/useLogin.js
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as AuthAPI from '../api/auth.api.js';
 import * as WithdrawAPI from '../api/withdraw.api.js';
 import { useUserStore } from '../store/AuthStore.js';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 export const useLogin = () => {
   const setAuth = useUserStore((s) => s.setAuth);
+  const router = useRouter();
 
   return useMutation({
-    mutationFn: AuthAPI.loginUser,
-    onSuccess: async(res) => {
-        console.log("Login response:", res);
-      if (res.token && res.user?.role !== 'admin') {
-        await   AsyncStorage.setItem("auth_token", res.token);
-       await  setAuth(res.token, res.user);
-        Toast.show({ type: 'success', text1: 'Login successful' });
+    mutationFn:  (payload) => AuthAPI.loginUser(payload),
+
+    onSuccess: async (res) => {
+      
+
+      if (res?.token && res?.user?.role !== "admin") {
+        await AsyncStorage.setItem("auth_token", res.token);
+        await setAuth(res.token, res.user);
+        Toast.show({ type: "success", text1: "Login successful" });
+        // router.replace("/Home"); // optional redirect
       } else {
-        Toast.show({ type: 'error', text1: 'Admins cannot log in here' });
+        Toast.show({ type: "error", text1: "Admins cannot log in here" });
       }
     },
-    onError: (error) => {
-      Toast.show({ type: 'error', text1: 'Login failed', text2: error.message });
-      return;
+
+    onError: async (error) => {
+      console.error("❌ Login error:", error.response?.data || error.message);
+console.log("Login error full:", error);
+      const message =
+        error?.response?.data?.message || "Login failed. Please try again.";
+
+      // ✅ Detect “email not verified” and redirect to OTP verification
+      if (message.toLowerCase().includes("email not verified")) {
+        Toast.show({
+          type: "info",
+          text1: "Email not verified",
+          text2: "Redirecting to OTP verification...",
+        });
+
+        // Small delay for user to read toast
+        setTimeout(() => {
+          router.push({
+            pathname: "/OtpVerify",
+            params: {
+              email:error?.response?.data?.email, // backend may return this
+              action: "verifyEmail",
+            },
+          });
+        }, 1500);
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Login failed",
+          text2: message,
+        });
+      }
     },
   });
 };
@@ -55,16 +89,18 @@ export const useVerifyToken = () => {
     },
   });
 };
-export const useProfile = () => {
+export const useFetchProfile = () => {
   const setUser = useUserStore((s) => s.setUser);
 
-  return useQuery({
-    queryKey: ["profile"],
-    queryFn: AuthAPI.getProfile,
-    retry: false, // do not retry automatically
+  return useMutation({
+    mutationFn: async () => {
+      const data = await AuthAPI.getProfile();
+      return data;
+    },
     onSuccess: (data) => {
       if (data?.user) {
-        setUser(data.user); // update Zustand store
+        setUser(data.user);
+        console.log("✅ Profile updated successfully:", data);
       }
     },
     onError: (err) => {
@@ -97,27 +133,34 @@ export const useChangePassword = () => {
   });
 };
 export const useCreateWithdrawRequest = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({ amount, upiId }) =>
       WithdrawAPI.createWithdrawRequest(amount, upiId),
-    onSuccess: (data) => {
+
+    onSuccess: async (data) => {
       Toast.show({
         type: "success",
         text1: "Success",
-        text2: data?.message || "Withdraw request created successfully",
+        text2: "Withdraw request sent successfully",
         position: "top",
         visibilityTime: 3000,
         autoHide: true,
       });
+
+      // ✅ Force refetch of profile no matter what
+      await queryClient.invalidateQueries({ queryKey: ["profile"], exact: true });
+      await queryClient.refetchQueries({ queryKey: ["profile"], exact: true });
     },
+
     onError: (error) => {
-      console.log("Withdraw request error:", error);
       const message =
         error?.response?.data?.message || "Failed to create withdraw request";
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: message ,
+        text2: message,
         position: "top",
         visibilityTime: 3000,
         autoHide: true,
@@ -125,6 +168,7 @@ export const useCreateWithdrawRequest = () => {
     },
   });
 };
+
 export const useLogout = () => {
   return useMutation({
     mutationFn: () => AuthAPI.logoutUser(),
@@ -206,6 +250,88 @@ export const useVerifyRazorpayPayment = () => {
         visibilityTime: 3000,
         autoHide: true,
       });
+    },
+  });
+};
+// 1️⃣ Send reset token
+export const useSendResetToken = () => {
+  return useMutation({
+    mutationFn: (payload) => AuthAPI.sendResetToken(payload),
+    onSuccess: (data) => {
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: data?.message || 'Reset token sent successfully',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+    },
+    onError: (error) => {
+      const message = error?.response?.data?.message || 'Failed to send reset token';
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: message,
+        position: 'top',
+        visibilityTime: 3000,
+      });
+    },
+  });
+};
+
+// 2️⃣ Reset password with token
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: ({ token, payload }) => resetPassword(token, payload),
+    onSuccess: (data) => {
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: data?.message || 'Password reset successfully',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+    },
+    onError: (error) => {
+      const message = error?.response?.data?.message || 'Failed to reset password';
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: message,
+        position: 'top',
+        visibilityTime: 3000,
+      });
+    },
+  });
+};
+// 🔹 Generate OTP Mutation
+export const useGenerateOtp = () => {
+  return useMutation({
+    mutationFn: ({ email, type }) => AuthAPI.generateOtp({email, type}),
+    onSuccess: (data) => {
+      console.log("OTP generated:", data);
+    Toast.show({ type: "success", text1: "OTP sent successfully" });
+    },
+    onError: (error) => {
+      Toast.show({ type: "error", text1: "Failed to send OTP. Please try again." });
+    },
+  });
+};
+
+// 🔹 Verify OTP Mutation
+export const useVerifyOtp = () => {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: ({ email, otp, type }) => AuthAPI.verifyOtp({ email, otp, type }),
+    onSuccess: (data) => {
+      Toast.show({ type: "success", text1: "OTP verified successfully" });
+      setTimeout(() => {
+        router.replace("/Login");
+      }, 1000);
+    },
+    onError: (error) => {
+      Toast.show({ type: "error", text1: error?.response?.data?.message || "OTP verification failed. Please try again." });
+
     },
   });
 };

@@ -74,6 +74,7 @@ export default function ChangePassword() {
         <TextInput
           className="ml-2 flex-1 py-4"
           placeholder={label}
+            placeholderTextColor="#999999" // explicit color
           secureTextEntry={!showPassword}
           value={value}
           onChangeText={setValue}

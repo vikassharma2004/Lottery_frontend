@@ -31,6 +31,7 @@ export const logoutUser = async () => {
 
 // Send reset token (email)
 export const sendResetToken = async (payload) => {
+  console.log("sendResetToken payload:", payload);
   const { data } = await axiosClient.post('/auth/send-reset-token', payload);
   return data;
 };
@@ -48,13 +49,14 @@ export const verifyToken = async () => {
 };
 
 // Generate OTP
-export const generateOtp = async (email, type) => {
-  const { data } = await axiosClient.post('/otp/generate', { email, type });
+export const generateOtp = async (payload) => {
+  const { data } = await axiosClient.post('/otp/generate', payload);
   return data;
 };
 
 // Verify OTP
-export const verifyOtp = async ({ email, otp }) => {
-  const { data } = await axiosClient.post('/otp/verify', { email, otp });
+export const verifyOtp = async (payload) => {
+  const { data } = await axiosClient.post('/otp/verify', payload);
+  console.log("verifyOtp response data:", data);
   return data;
 };

@@ -8,8 +8,10 @@ import SplashScreen from "../components/SplashScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import { useVerifyToken } from "@/hooks/Auth";
+import { StatusBar } from "expo-status-bar";
+import { toastConfig } from "@/components/ToastConfig";
 
-const queryClient = new QueryClient();
+export const queryClient = new QueryClient();
 
 export default function RootLayout() {
   return (
@@ -55,7 +57,7 @@ const RootContent = () => {
     const user = useUserStore.getState().user;
 
     if (!token || !user) {
-      router.replace("/Login");
+      router.replace("/");
       return;
     }
 
@@ -78,13 +80,14 @@ const RootContent = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#FFF8E7]">
+      <StatusBar style="dark" backgroundColor="black" />
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(profile)" options={{ headerShown: false }} />
       </Stack>
-      <Toast />
+      <Toast  config={toastConfig}/>
     </SafeAreaView>
   );
 };

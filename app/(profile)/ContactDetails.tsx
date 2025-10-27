@@ -1,155 +1,157 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-} from "react-native";
+import React from "react";
+import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { useUserStore } from "@/store/AuthStore";
+import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import COLORS from "@/constants/Colors";
 
 export default function ContactDetails() {
-  const [isEditing, setIsEditing] = useState(false);
+  const { user } = useUserStore();
 
-  const [user, setUser] = useState({
-    createdAt: "2025-10-24T15:30:57.314Z",
-    email: "vikasfixel@gmail.com",
-    hasPaid: false,
-    id: "68fb9bb19639608f4fec974d",
-    isSuspended: false,
-    isVerified: true,
-    referralCode: null,
-    referralCount: 0,
-    role: "admin",
-    successfulReferrals: 0,
-    ticketCount: 0,
-    walletBalance: 0,
-  });
-
-  const handleEditToggle = () => {
-    setIsEditing(!isEditing);
-  };
-
-  const handleChange = (field, value) => {
-    setUser({ ...user, [field]: value });
-  };
+  if (!user) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text className="text-gray-500">Loading user details...</Text>
+      </View>
+    );
+  }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Section */}
-        <View className="items-center mt-6">
-          <View className="relative">
-            <Image
-              source={{
-                uri: "https://i.pravatar.cc/150?img=12",
-              }}
-              className="w-28 h-28 rounded-full border-4 border-blue-500"
-            />
-            <TouchableOpacity
-              onPress={handleEditToggle}
-              className="absolute bottom-0 right-1 bg-blue-500 p-2 rounded-full shadow"
-            >
-              <Ionicons
-                name={isEditing ? "checkmark" : "create-outline"}
-                size={18}
-                color="white"
-              />
-            </TouchableOpacity>
+        {/* 🧭 Top Card */}
+        <View className=" rounded-2xl p-5 mb-6 shadow-md" style={{ backgroundColor: COLORS.BACKGROUND }}>
+          <Text className="text-black text-xl font-bold mb-2">
+            Welcome, {user.email.split("@")[0]}
+          </Text>
+
+          <View className="flex-row justify-between items-center mb-3">
+            <View className="flex-row items-center">
+              <Ionicons name="mail-outline" size={20} color="white" />
+              <Text className="text-white ml-2">{user.email}</Text>
+            </View>
+
+            <View className="flex-row items-center bg-white/20 px-3 py-1 rounded-full">
+              <Ionicons name="wallet-outline" size={18} color="white" />
+              <Text className="text-white ml-2 font-semibold">
+                ₹{user.walletBalance || 0}
+              </Text>
+            </View>
           </View>
 
-          <Text className="text-2xl font-bold text-gray-800 mt-4">
-            {user.email.split("@")[0]}
-          </Text>
-          <Text className="text-gray-500 capitalize">{user.role}</Text>
-
-          <View className="mt-3 bg-blue-50 px-4 py-2 rounded-full flex-row items-center">
-            <Ionicons name="wallet-outline" size={16} color="#2563EB" />
-            <Text className="ml-2 text-blue-600 font-semibold">
-              ₹{user.walletBalance}
+          <View className="flex-row items-center">
+            <Ionicons name="calendar-outline" size={18} color="white" />
+            <Text className="text-blue-100 ml-2 text-sm">
+              Joined: {new Date(user.createdAt).toDateString()}
             </Text>
           </View>
         </View>
 
-        {/* Profile Info Card */}
-        <Animated.View
-          entering={FadeIn}
-          exiting={FadeOut}
-          className="mt-8 bg-gray-50 rounded-2xl p-5 shadow-sm border border-gray-200"
-        >
-          {/* Email */}
-          <View className="mb-5">
-            <Text className="text-gray-500 mb-1">Email</Text>
-            {isEditing ? (
-              <TextInput
-                value={user.email}
-                onChangeText={(val) => handleChange("email", val)}
-                className="border border-gray-300 rounded-xl p-3 text-gray-800"
-                keyboardType="email-address"
-              />
-            ) : (
-              <Text className="text-gray-800 font-semibold">{user.email}</Text>
-            )}
+        {/* 👤 Personal Info */}
+        <View className="bg-white rounded-2xl p-5 mb-6 shadow-sm">
+          <Text className="text-lg font-bold text-gray-800 mb-4">
+            Personal Information
+          </Text>
+
+          <View className="flex-row items-center mb-3">
+            <Ionicons name="mail-outline" size={20} color={COLORS.PRIMARY} />
+            <View className="ml-3">
+              <Text className="text-gray-500 text-sm">Email</Text>
+              <Text className="text-gray-800 font-medium">{user.email}</Text>
+            </View>
           </View>
 
-          {/* Referral Code */}
-          <View className="mb-5">
-            <Text className="text-gray-500 mb-1">Referral Code</Text>
-            <Text className="text-gray-800 font-semibold">
-              {user.referralCode || "Not generated"}
+          <View className="flex-row items-center">
+            <Ionicons name="calendar-outline" size={20} color={COLORS.PRIMARY} />
+            <View className="ml-3">
+              <Text className="text-gray-500 text-sm">Account Created</Text>
+              <Text className="text-gray-800 font-medium">
+                {new Date(user.createdAt).toDateString()}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* 🎟 Referral Info */}
+        <View className="bg-white rounded-2xl p-5 mb-6 shadow-sm">
+          <Text className="text-lg font-bold text-gray-800 mb-4">
+            Referral Info
+          </Text>
+
+          <View className="flex-row items-center mb-3">
+            <FontAwesome5 name="award" size={18} color={COLORS.PRIMARY} />
+            <View className="ml-3">
+              <Text className="text-gray-500 text-sm">Referral Code</Text>
+              <Text className="text-gray-800 font-medium">
+                {user.referralCode || "Not available"}
+              </Text>
+            </View>
+          </View>
+
+          <View className="flex-row items-center mb-3">
+            <Ionicons name="people-outline" size={20} color={COLORS.PRIMARY} />
+            <View className="ml-3">
+              <Text className="text-gray-500 text-sm">Referral Count</Text>
+              <Text className="text-gray-800 font-medium">
+                {user.referralCount || 0}
+              </Text>
+            </View>
+          </View>
+
+          <View className="flex-row items-center">
+            <Ionicons name="checkmark-circle-outline" size={20} color={COLORS.PRIMARY} />
+            <View className="ml-3">
+              <Text className="text-gray-500 text-sm">Successful Referrals</Text>
+              <Text className="text-gray-800 font-medium">
+                {user.successfulReferrals || 0}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* 🛡 Account Status */}
+        <View className="bg-white rounded-2xl p-5 shadow-sm">
+          <Text className="text-lg font-bold text-gray-800 mb-4">
+            Account Status
+          </Text>
+
+          <View className="flex-row justify-between mb-3">
+            <View className="flex-row items-center">
+              <Ionicons name="checkmark-done-outline" size={20} color="green" />
+              <Text className="text-gray-800 ml-2">Verified</Text>
+            </View>
+            <Text className="text-green-500 font-bold">
+              {user.isVerified ? "✅" : "❌"}
             </Text>
           </View>
 
-          {/* Tickets */}
-          <View className="mb-5">
-            <Text className="text-gray-500 mb-1">Ticket Count</Text>
-            <Text className="text-gray-800 font-semibold">
-              {user.ticketCount}
+          <View className="flex-row justify-between mb-3">
+            <View className="flex-row items-center">
+              <MaterialIcons name="paid" size={20} color="green" />
+              <Text className="text-gray-800 ml-2">Paid</Text>
+            </View>
+            <Text className="text-green-500 font-bold">
+              {user.hasPaid ? "💰" : "—"}
             </Text>
           </View>
 
-          {/* Verification */}
-          <View className="mb-5">
-            <Text className="text-gray-500 mb-1">Verification</Text>
+          <View className="flex-row justify-between">
+            <View className="flex-row items-center">
+              <Ionicons name="shield-checkmark-outline" size={20} color={COLORS.PRIMARY} />
+              <Text className="text-gray-800 ml-2">Status</Text>
+            </View>
             <Text
-              className={`font-semibold ${
-                user.isVerified ? "text-green-600" : "text-red-500"
+              className={`font-bold ${
+                user.isSuspended ? "text-red-500" : "text-green-500"
               }`}
             >
-              {user.isVerified ? "Verified" : "Not Verified"}
+              {user.isSuspended ? "🚫 Suspended" : "Active"}
             </Text>
           </View>
-
-          {/* Status */}
-          <View>
-            <Text className="text-gray-500 mb-1">Account Status</Text>
-            <Text
-              className={`font-semibold ${
-                user.isSuspended ? "text-red-500" : "text-green-600"
-              }`}
-            >
-              {user.isSuspended ? "Suspended" : "Active"}
-            </Text>
-          </View>
-        </Animated.View>
-
-        {/* Save Changes Button */}
-        {isEditing && (
-          <TouchableOpacity
-            onPress={handleEditToggle}
-            className="mt-8 bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl py-4 shadow-lg"
-          >
-            <Text className="text-center text-white font-bold text-lg">
-              Save Changes
-            </Text>
-          </TouchableOpacity>
-        )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
