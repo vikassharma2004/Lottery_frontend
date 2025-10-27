@@ -32,7 +32,7 @@ export const toastConfig: ToastConfig = {
   error: (props) => (
     <View
       style={{
-        height: 80,
+        height: 70,
         width: '90%',
         backgroundColor: '#f44336',
         borderRadius: 12,
@@ -44,7 +44,7 @@ export const toastConfig: ToastConfig = {
         elevation: 4,
       }}
     >
-      <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}>
+      <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#fff' }}>
         {props.text1}
       </Text>
       <Text style={{ fontSize: 14, color: '#fff', marginTop: 4 }}>

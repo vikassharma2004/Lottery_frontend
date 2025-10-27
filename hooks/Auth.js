@@ -1,4 +1,4 @@
-// src/hooks/useLogin.js
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as AuthAPI from '../api/auth.api.js';
 import * as WithdrawAPI from '../api/withdraw.api.js';
@@ -6,7 +6,6 @@ import { useUserStore } from '../store/AuthStore.js';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 export const useLogin = () => {
   const setAuth = useUserStore((s) => s.setAuth);
   const router = useRouter();
@@ -15,8 +14,6 @@ export const useLogin = () => {
     mutationFn:  (payload) => AuthAPI.loginUser(payload),
 
     onSuccess: async (res) => {
-      
-
       if (res?.token && res?.user?.role !== "admin") {
         await AsyncStorage.setItem("auth_token", res.token);
         await setAuth(res.token, res.user);
@@ -29,7 +26,6 @@ export const useLogin = () => {
 
     onError: async (error) => {
       console.error("❌ Login error:", error.response?.data || error.message);
-console.log("Login error full:", error);
       const message =
         error?.response?.data?.message || "Login failed. Please try again.";
 
@@ -100,7 +96,6 @@ export const useFetchProfile = () => {
     onSuccess: (data) => {
       if (data?.user) {
         setUser(data.user);
-        console.log("✅ Profile updated successfully:", data);
       }
     },
     onError: (err) => {
@@ -148,10 +143,6 @@ export const useCreateWithdrawRequest = () => {
         visibilityTime: 3000,
         autoHide: true,
       });
-
-      // ✅ Force refetch of profile no matter what
-      await queryClient.invalidateQueries({ queryKey: ["profile"], exact: true });
-      await queryClient.refetchQueries({ queryKey: ["profile"], exact: true });
     },
 
     onError: (error) => {
@@ -170,6 +161,7 @@ export const useCreateWithdrawRequest = () => {
 };
 
 export const useLogout = () => {
+  const router=useRouter();
   return useMutation({
     mutationFn: () => AuthAPI.logoutUser(),
     onSuccess: (data) => {
@@ -181,7 +173,7 @@ export const useLogout = () => {
         autoHide: true,
       });
      
-      
+      router.replace("/Login");
     },
     onError: (error) => {
       const message =
@@ -201,17 +193,8 @@ export const useCreateRazorpayOrder = () => {
   return useMutation({
     mutationFn: () => WithdrawAPI.createRazorpayOrder(),
     onSuccess: (data) => {
-      Toast.show({
-        type: 'success',
-        text1: 'Order Created',
-        text2: 'Razorpay order created successfully',
-        position: 'top',
-        visibilityTime: 3000,
-        autoHide: true,
-      });
     },
     onError: (error) => {
-      console.log('Create order error:', error);
       const message =
         error?.response?.data?.message || 'Failed to create Razorpay order';
       Toast.show({
@@ -232,16 +215,15 @@ export const useVerifyRazorpayPayment = () => {
       Toast.show({
         type: 'success',
         text1: 'Payment Verified',
-        text2: data?.message || 'Payment verified successfully',
+        text2:'Payment completed successfully',
         position: 'top',
         visibilityTime: 3000,
         autoHide: true,
       });
     },
     onError: (error) => {
-      console.log('Verify payment error:', error);
       const message =
-        error?.response?.data?.message || 'Payment verification failed';
+        error?.response?.data?.message || 'Payment failed';
       Toast.show({
         type: 'error',
         text1: 'Error',
@@ -282,7 +264,8 @@ export const useSendResetToken = () => {
 // 2️⃣ Reset password with token
 export const useResetPassword = () => {
   return useMutation({
-    mutationFn: ({ token, payload }) => resetPassword(token, payload),
+    mutationFn: ({email, otp, password}) => AuthAPI.resetPassword({email, otp, password}),
+
     onSuccess: (data) => {
       Toast.show({
         type: 'success',
@@ -309,7 +292,6 @@ export const useGenerateOtp = () => {
   return useMutation({
     mutationFn: ({ email, type }) => AuthAPI.generateOtp({email, type}),
     onSuccess: (data) => {
-      console.log("OTP generated:", data);
     Toast.show({ type: "success", text1: "OTP sent successfully" });
     },
     onError: (error) => {
@@ -330,8 +312,66 @@ export const useVerifyOtp = () => {
       }, 1000);
     },
     onError: (error) => {
-      Toast.show({ type: "error", text1: error?.response?.data?.message || "OTP verification failed. Please try again." });
+      console.log("Error verifying OTP:", error);
+      Toast.show({ type: "error", text1: error?.response?.data?.message || "OTP verification failed. Please try again." })
+    },
+  });
+};
 
+export const useReportIssue = () => {
+  return useMutation({
+    mutationFn:({issueType, description,email})=> AuthAPI.reportIssue({issueType, description,email}),
+    onSuccess: (data) => {
+      Toast.show({
+        type: "success",
+        text1: data?.message || "Issue reported successfully!",
+      });
+    },
+    onError: (error) => {
+      const message =
+        error?.response?.data?.message || "Failed to submit issue.";
+      Toast.show({
+        type: "error",
+        text1: message,
+      });
+    },
+  });
+};
+// ✅ Mark all notifications as read
+export const useMarkAllAsRead = () => {
+  return useMutation({
+    mutationFn: () => AuthAPI.markAllAsRead(),
+    onSuccess: (data) => {
+      Toast.show({
+        type: "success",
+        text1: data?.message || "All notifications marked as read!",
+      });
+    },
+    onError: (error) => {
+      const message =
+        error?.response?.data?.message ||
+        "Failed to mark notifications as read.";
+      Toast.show({
+        type: "error",
+        text1: message,
+      });
+    },
+  });
+};
+
+// ✅ Get all notifications (on-demand)
+export const useGetNotifications = () => {
+  return useMutation({
+    mutationFn: () => AuthAPI.getNotifications(),
+    onSuccess: (data) => {
+    },
+    onError: (error) => {
+      const message =
+        error?.response?.data?.message || "Failed to fetch notifications.";
+      Toast.show({
+        type: "error",
+        text1: message,
+      });
     },
   });
 };

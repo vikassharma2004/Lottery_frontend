@@ -37,8 +37,8 @@ export const sendResetToken = async (payload) => {
 };
 
 // Reset password with token
-export const resetPassword = async (token, payload) => {
-  const { data } = await axiosClient.post(`/auth/reset-password/${token}`, payload);
+export const resetPassword = async ( payload) => {
+  const { data } = await axiosClient.post(`/auth/reset-password`, payload);
   return data;
 };
 
@@ -58,5 +58,21 @@ export const generateOtp = async (payload) => {
 export const verifyOtp = async (payload) => {
   const { data } = await axiosClient.post('/otp/verify', payload);
   console.log("verifyOtp response data:", data);
+  return data;
+};
+
+export const reportIssue = async (payload) => {
+  const { data } = await axiosClient.post("/report", payload);
+  return data;
+};
+// ✅ Get all notifications for the logged-in user
+export const getNotifications = async () => {
+  const { data } = await axiosClient.get("/Notification/all");
+  return data;
+};
+
+// ✅ Mark all as read
+export const markAllAsRead = async () => {
+  const { data } = await axiosClient.post("/Notification/mark-read");
   return data;
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ScrollView,
@@ -10,22 +10,21 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { settings } from "@/constants/data";
-import { SettingItem } from "@/types/constant.types";
-import { Link, useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useRouter } from "expo-router";
+
+import { settings } from "@/constants/data";
 import AppModal from "@/components/AppModal";
-import { useUserStore } from "../../store/AuthStore.js";
-import { useMemo } from "react";
-import { useLogout } from "@/hooks/Auth.js";
-let currentUserRole;
+import { useUserStore } from "../../store/AuthStore";
+import { useLogout, useGetNotifications, useMarkAllAsRead } from "@/hooks/Auth";
 
 interface SettingsItemProps {
   icon: string;
   title: string;
-  navigate?: string; // path to navigate
+  navigate?: string;
   textStyle?: string;
   showArrow?: boolean;
+  onPress?: () => void;
 }
 
 const SettingsItemRow = ({
@@ -35,7 +34,7 @@ const SettingsItemRow = ({
   textStyle = "",
   showArrow = true,
   onPress,
-}: SettingsItemProps & { onPress?: () => void }) => (
+}: SettingsItemProps) => (
   <TouchableOpacity
     onPress={onPress}
     activeOpacity={0.7}
@@ -55,35 +54,53 @@ const SettingsItemRow = ({
 );
 
 const Profile = () => {
-const router = useRouter();
-  const { user, token, hydrated, getProfile, clearAuth } = useUserStore();
-const { mutate: logout, isPending } = useLogout();
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: "Payment received", read: false },
-    { id: 2, message: "New job posted", read: true },
-  ]);
+  const router = useRouter();
+  const { user, token, hydrated, clearAuth } = useUserStore();
+  const { mutate: logout } = useLogout();
+  const { mutate: markAllAsRead } = useMarkAllAsRead();
+  const { mutateAsync: getNotifications, isPending } = useGetNotifications();
+
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
-  const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
+  // ✅ Fetch notifications only when modal opens
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const data = await getNotifications();
+      if (data?.notifications) setNotifications(data.notifications);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  }, [getNotifications]);
+
+  useEffect(() => {
+    if (modalVisible) {
+      fetchNotifications();
+    }
+  }, [modalVisible, fetchNotifications]);
+
+  const unreadCount = useMemo(
+    () => notifications.filter((n) => !n.read).length,
+    [notifications]
+  );
+
   const currentUserRole = user?.role || "user";
-
   const filteredSettings = useMemo(
     () => settings.filter((item) => item.role === currentUserRole),
     [currentUserRole]
   );
 
-  // ✅ Navigation & state side effects
+  // ✅ Handle logout redirect safely
   useEffect(() => {
-    if (!hydrated) return; // wait for store hydration
-
+    if (!hydrated) return;
     if (!user || !token) {
-      clearAuth(); // safely called inside useEffect
+      clearAuth();
       router.replace("/Login");
     }
   }, [user, token, hydrated, clearAuth, router]);
 
-  if (!user || !token) return null; // render nothing while redirecting
+  if (!user || !token) return null;
 
   return (
     <SafeAreaView className="flex-1 bg-[#FFF8E7]">
@@ -96,6 +113,7 @@ const { mutate: logout, isPending } = useLogout();
           <Text className="text-xl font-rubik-bold text-[#212121]">
             Profile
           </Text>
+
           <TouchableOpacity onPress={() => setModalVisible(true)}>
             <Ionicons name="notifications-outline" size={28} color="#212121" />
             {unreadCount > 0 && (
@@ -126,9 +144,10 @@ const { mutate: logout, isPending } = useLogout();
             </TouchableOpacity>
             <Text className="text-2xl font-rubik-bold mt-2 text-[#212121]">
               Hello,{" "}
-              {user?.email?.split("@")[0].charAt(0).toUpperCase() +
-                user?.email.split("@")[0].slice(1)}
-              
+              {user?.email
+                ? user.email.split("@")[0].charAt(0).toUpperCase() +
+                  user.email.split("@")[0].slice(1)
+                : "User"}
             </Text>
           </View>
         </View>
@@ -137,7 +156,7 @@ const { mutate: logout, isPending } = useLogout();
         <View className="flex flex-col mt-10 border-t pt-5 border-gray-200">
           {filteredSettings.map((item, index) => (
             <SettingsItemRow
-              key={index}
+              key={`${item.title}-${index}`}
               icon={item.icon}
               title={item.title}
               navigate={item.navigate}
@@ -153,9 +172,11 @@ const { mutate: logout, isPending } = useLogout();
             title="Logout"
             textStyle="text-[#E53935]"
             showArrow={false}
-            onPress={() => setLogoutModalVisible(true)} // open modal// replace with logout logic
+            onPress={() => setLogoutModalVisible(true)}
           />
         </View>
+
+        {/* Logout Modal */}
         <AppModal
           visible={logoutModalVisible}
           onClose={() => setLogoutModalVisible(false)}
@@ -163,56 +184,120 @@ const { mutate: logout, isPending } = useLogout();
           message="Are you sure you want to logout from the app?"
           confirmText="Logout"
           cancelText="Cancel"
-          onConfirm={async() => {
-           await logout();
-           await clearAuth();
-            router.replace("/Login");
+          onConfirm={async () => {
+            await clearAuth();
+            await logout();
             setLogoutModalVisible(false);
           }}
         />
+
+        {/* Notifications Modal */}
         <Modal
           visible={modalVisible}
           animationType="slide"
-          transparent={true}
+          transparent={false}
           onRequestClose={() => setModalVisible(false)}
         >
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              backgroundColor: "rgba(0,0,0,0.5)",
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: "#FFF",
-                margin: 20,
-                borderRadius: 10,
-                padding: 20,
-              }}
-            >
-              <Text
-                style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}
-              >
+          <SafeAreaView className="flex-1 bg-[#FFF8E7]">
+            {/* Header */}
+            <View className="flex flex-row items-center justify-between px-5 py-4 border-b border-gray-300 bg-white shadow-sm">
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Ionicons name="arrow-back" size={24} color="#212121" />
+              </TouchableOpacity>
+
+              <Text className="text-xl font-bold text-[#212121]">
                 Notifications
               </Text>
-              {notifications.map((n) => (
-                <Text
-                  key={n.id}
-                  style={{ marginBottom: 5, color: n.read ? "#555" : "#000" }}
-                >
-                  {n.message}
-                </Text>
-              ))}
 
               <TouchableOpacity
-                onPress={() => setModalVisible(false)}
-                style={{ marginTop: 10 }}
+                onPress={() => {
+                  markAllAsRead();
+                  setNotifications((prev) =>
+                    prev.map((n) => ({ ...n, read: true }))
+                  );
+                }}
               >
-                <Text style={{ color: "blue", textAlign: "right" }}>Close</Text>
+                <Text className="text-blue-600 font-semibold">
+                  Mark all read
+                </Text>
               </TouchableOpacity>
             </View>
-          </View>
+
+            {/* Notifications List */}
+            <ScrollView className="flex-1 px-5 py-4">
+              {isPending ? (
+                <View className="flex-1 justify-center items-center mt-20">
+                  <ActivityIndicator size="large" color="#212121" />
+                </View>
+              ) : notifications.length === 0 ? (
+                <View className="flex-1 justify-center items-center mt-20">
+                  <Ionicons
+                    name="notifications-off-outline"
+                    size={64}
+                    color="#9E9E9E"
+                  />
+                  <Text className="text-gray-500 mt-3 text-base">
+                    No notifications yet
+                  </Text>
+                </View>
+              ) : (
+                notifications.map((n) => {
+                  const typeColors: Record<string, string> = {
+                    payment: "#E8F5E9",
+                    withdraw: "#FFF9C4",
+                    ticket: "#E3F2FD",
+                    referral: "#FCE4EC",
+                    report: "#FFEBEE",
+                    other: "#EEEEEE",
+                  };
+
+                  const borderColors: Record<string, string> = {
+                    payment: "#81C784",
+                    withdraw: "#FDD835",
+                    ticket: "#64B5F6",
+                    referral: "#F06292",
+                    report: "#E57373",
+                    other: "#9E9E9E",
+                  };
+
+                  const bgColor = typeColors[n.type] || typeColors.other;
+                  const borderColor =
+                    borderColors[n.type] || borderColors.other;
+
+                  return (
+                    <View
+                      key={n._id || n.id}
+                      className="rounded-2xl p-2 mb-3 shadow-md"
+                      style={{
+                        backgroundColor: bgColor,
+                        borderLeftWidth: 5,
+                        borderColor: borderColor,
+                        opacity: n.read ? 0.7 : 1,
+                      }}
+                    >
+                      <View className="flex flex-row justify-between items-center mb-2">
+                        <Text className="text-lg font-bold text-[#212121] capitalize">
+                          {n.type}
+                        </Text>
+                        {!n.read && (
+                          <View className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                        )}
+                      </View>
+
+                      <Text className="text-[#424242] text-sm">
+                        {n.message}
+                      </Text>
+
+                      <Text className="text-xs text-gray-600 mt-1">
+                        {new Date().toLocaleDateString()}{" "}
+                        {new Date().toLocaleTimeString()}
+                      </Text>
+                    </View>
+                  );
+                })
+              )}
+            </ScrollView>
+          </SafeAreaView>
         </Modal>
       </ScrollView>
     </SafeAreaView>
