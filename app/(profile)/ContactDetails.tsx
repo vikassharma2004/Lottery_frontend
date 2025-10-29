@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, ImageBackground } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUserStore } from "@/store/AuthStore";
 import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
@@ -17,41 +17,44 @@ export default function ContactDetails() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+     <SafeAreaView className="flex-1 bg-[#FFF5DB]">
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* 🧭 Top Card */}
-        <View className=" rounded-2xl p-5 mb-6 shadow-md" style={{ backgroundColor: COLORS.BACKGROUND }}>
-          <Text className="text-black text-xl font-bold mb-2">
-            Welcome, {user.email.split("@")[0]}
-          </Text>
-
-          <View className="flex-row justify-between items-center mb-3">
-            <View className="flex-row items-center">
-              <Ionicons name="mail-outline" size={20} color="white" />
-              <Text className="text-white ml-2">{user.email}</Text>
-            </View>
-
-            <View className="flex-row items-center bg-white/20 px-3 py-1 rounded-full">
-              <Ionicons name="wallet-outline" size={18} color="white" />
-              <Text className="text-white ml-2 font-semibold">
-                ₹{user.walletBalance || 0}
+        {/* 🟢 HERO CARD */}
+        <View className="mb-6">
+            <View className="bg-[#3B82F6] border p-6 rounded-3xl ">
+              <Text className="text-white text-xl font-bold mb-1">
+                Welcome, {user.email.split("@")[0]}
               </Text>
-            </View>
-          </View>
 
-          <View className="flex-row items-center">
-            <Ionicons name="calendar-outline" size={18} color="white" />
-            <Text className="text-blue-100 ml-2 text-sm">
-              Joined: {new Date(user.createdAt).toDateString()}
-            </Text>
-          </View>
+              <View className="flex-row justify-between items-center mb-3">
+                <View className="flex-row items-center">
+                  <Ionicons name="mail-outline" size={18} color="white" />
+                  <Text className="text-white ml-2 text-sm">{user.email}</Text>
+                </View>
+
+                <View className="flex-row items-center bg-white/25 px-3 py-1 rounded-full">
+                  <Ionicons name="wallet-outline" size={18} color="white" />
+                  <Text className="text-white ml-2 font-semibold">
+                    ₹{user.walletBalance || 0}
+                  </Text>
+                </View>
+              </View>
+
+              <View className="flex-row items-center">
+                <Ionicons name="calendar-outline" size={18} color="white" />
+                <Text className="text-white/90 ml-2 text-sm">
+                  Joined {new Date(user.createdAt).toDateString()}
+                </Text>
+              </View>
+            </View>
+         
         </View>
 
-        {/* 👤 Personal Info */}
-        <View className="bg-white rounded-2xl p-5 mb-6 shadow-sm">
+        {/* 🧭 PERSONAL INFO */}
+        <View className="bg-white rounded-2xl p-5 mb-5 shadow-lg border border-gray-400">
           <Text className="text-lg font-bold text-gray-800 mb-4">
             Personal Information
           </Text>
@@ -60,7 +63,7 @@ export default function ContactDetails() {
             <Ionicons name="mail-outline" size={20} color={COLORS.PRIMARY} />
             <View className="ml-3">
               <Text className="text-gray-500 text-sm">Email</Text>
-              <Text className="text-gray-800 font-medium">{user.email}</Text>
+              <Text className="text-gray-900 font-semibold">{user.email}</Text>
             </View>
           </View>
 
@@ -68,52 +71,54 @@ export default function ContactDetails() {
             <Ionicons name="calendar-outline" size={20} color={COLORS.PRIMARY} />
             <View className="ml-3">
               <Text className="text-gray-500 text-sm">Account Created</Text>
-              <Text className="text-gray-800 font-medium">
+              <Text className="text-gray-900 font-semibold">
                 {new Date(user.createdAt).toDateString()}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* 🎟 Referral Info */}
-        <View className="bg-white rounded-2xl p-5 mb-6 shadow-sm">
-          <Text className="text-lg font-bold text-gray-800 mb-4">
+        {/* 🎟 REFERRAL CARD */}
+        <View className="bg-[#E8F5E9] rounded-2xl p-5 mb-5 shadow-sm border border-gray-400">
+          <Text className="text-lg font-bold text-[#2E7D32] mb-4">
             Referral Info
           </Text>
 
           <View className="flex-row items-center mb-3">
-            <FontAwesome5 name="award" size={18} color={COLORS.PRIMARY} />
+            <FontAwesome5 name="award" size={18} color="#2E7D32" />
             <View className="ml-3">
-              <Text className="text-gray-500 text-sm">Referral Code</Text>
-              <Text className="text-gray-800 font-medium">
+              <Text className="text-[#33691E] text-sm">Referral Code</Text>
+              <Text className="text-[#1B5E20] font-semibold">
                 {user.referralCode || "Not available"}
               </Text>
             </View>
           </View>
 
           <View className="flex-row items-center mb-3">
-            <Ionicons name="people-outline" size={20} color={COLORS.PRIMARY} />
+            <Ionicons name="people-outline" size={20} color="#2E7D32" />
             <View className="ml-3">
-              <Text className="text-gray-500 text-sm">Referral Count</Text>
-              <Text className="text-gray-800 font-medium">
+              <Text className="text-[#33691E] text-sm">Referral Count</Text>
+              <Text className="text-[#1B5E20] font-semibold">
                 {user.referralCount || 0}
               </Text>
             </View>
           </View>
 
           <View className="flex-row items-center">
-            <Ionicons name="checkmark-circle-outline" size={20} color={COLORS.PRIMARY} />
+            <Ionicons name="checkmark-circle-outline" size={20} color="#2E7D32" />
             <View className="ml-3">
-              <Text className="text-gray-500 text-sm">Successful Referrals</Text>
-              <Text className="text-gray-800 font-medium">
+              <Text className="text-[#33691E] text-sm">
+                Successful Referrals
+              </Text>
+              <Text className="text-[#1B5E20] font-semibold">
                 {user.successfulReferrals || 0}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* 🛡 Account Status */}
-        <View className="bg-white rounded-2xl p-5 shadow-sm">
+        {/* 🛡 STATUS CARD */}
+        <View className="bg-white rounded-2xl p-5 shadow-md border border-gray-400">
           <Text className="text-lg font-bold text-gray-800 mb-4">
             Account Status
           </Text>
@@ -138,17 +143,35 @@ export default function ContactDetails() {
             </Text>
           </View>
 
-          <View className="flex-row justify-between">
+          <View className="flex-row justify-between mb-3">
             <View className="flex-row items-center">
-              <Ionicons name="shield-checkmark-outline" size={20} color={COLORS.PRIMARY} />
+              <Ionicons
+                name="shield-checkmark-outline"
+                size={20}
+                color={COLORS.PRIMARY}
+              />
               <Text className="text-gray-800 ml-2">Status</Text>
             </View>
             <Text
               className={`font-bold ${
-                user.isSuspended ? "text-red-500" : "text-green-500"
+                user.isSuspended ? "text-red-500" : "text-green-600"
               }`}
             >
-              {user.isSuspended ? "🚫 Suspended" : "Active"}
+              {user.isSuspended ? "🚫 Suspended" : "🟢 Active"}
+            </Text>
+          </View>
+
+          <View className="flex-row justify-between">
+            <View className="flex-row items-center">
+              <Ionicons
+                name="time-outline"
+                size={20}
+                color={COLORS.PRIMARY}
+              />
+              <Text className="text-gray-800 ml-2">Last Payment</Text>
+            </View>
+            <Text className="font-semibold text-gray-700 text-sm">
+              {user.lastPaymentDate || "—"}
             </Text>
           </View>
         </View>

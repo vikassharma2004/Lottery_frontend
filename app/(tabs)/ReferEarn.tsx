@@ -22,6 +22,7 @@ import RazorpayCheckout from "react-native-razorpay";
 import { useCreateRazorpayOrder, useVerifyRazorpayPayment } from "@/hooks/Auth";
 import { useFetchProfile } from "@/hooks/Auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Animated, { FadeIn } from "react-native-reanimated";
 
 const ReferEarn = () => {
   const router = useRouter();
@@ -134,18 +135,28 @@ const ReferEarn = () => {
     </TouchableOpacity>
   </View>
 
-  {/* 🟨 Trust Bar Section */}
-  <View className="px-6 mt-4">
-    <Text className="text-sm font-medium text-[#424242] mb-1">
-      Trusted by <Text className="font-bold text-[#43A047]">1,276+</Text> users who’ve already joined!
-    </Text>
-    <View className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-      <View
-        className="h-full bg-[#43A047]"
-        style={{ width: "82%" }} // dynamic later from API
-      />
+ {/* 🟩 Trust Bar Section */}
+<View className="px-6 mt-6">
+  <View className="bg-[#E8F5E9] rounded-2xl py-4 px-5 flex-row items-center justify-between shadow-sm">
+    <View className="flex-row items-center">
+      <View className="bg-[#43A047]/20 p-3 rounded-full mr-3">
+        <Ionicons name="people" size={28} color="#43A047" />
+      </View>
+      <View>
+        <Text className="text-lg text-[#2E7D32] font-semibold">
+          {user?.totalPaidUsers ?? 100}+ Trusted Users
+        </Text>
+        <Text className="text-sm text-[#424242] mt-1">
+          Join the growing community today
+        </Text>
+      </View>
     </View>
+    <Animated.View entering={FadeIn.delay(200)}>
+      <Ionicons name="checkmark-circle" size={32} color="#43A047" />
+    </Animated.View>
   </View>
+</View>
+
 
   <ScrollView
     showsVerticalScrollIndicator={false}

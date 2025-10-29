@@ -72,7 +72,6 @@ const SignUp = () => {
       password: trimmedPassword,
       referralCode: trimmedReferral,
     });
-    console.log("res", res);
     if (res?.success) {
       setEmail("");
       setPassword("");

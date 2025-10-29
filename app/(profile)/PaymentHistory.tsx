@@ -7,11 +7,13 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { Ionicons } from "@expo/vector-icons";
 import { axiosClient } from "@/api/axiosClient";
 import { useMutation } from "@tanstack/react-query";
 import COLORS from "@/constants/Colors";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import Toast from "react-native-toast-message";
 
 const FILTERS = ["all", "pending", "completed", "failed", "cancelled"];
 
@@ -82,87 +84,97 @@ export default function PaymentHistory() {
     }
   };
 
-const renderItem = ({ item, index }) => (
-  <Animated.View
-    entering={FadeInDown.delay(index * 80).springify()}
-    className="bg-white mb-3 p-3 rounded-xl shadow-md border border-gray-300"
-    style={{ elevation: 2 }}
-  >
-    {/* Header Row */}
-    <View className="flex-row justify-between items-center mb-2">
-      <View>
-        <Text className="text-base font-semibold text-gray-900 capitalize">
-          {item.type === "withdrawal" ? "Withdrawal" : item.type}
-        </Text>
-
-        {/* 🔹 Static Withdrawal ID (temporary) */}
-        {item.type === "withdrawal" && (
-          <View className="flex-row items-center mt-0.5">
-            <Text className="text-[10px] text-gray-600 font-medium">ID: </Text>
-            <Text className="text-[10px] font-semibold text-blue-600">
-              WD-123456
-            </Text>
-          </View>
-        )}
-      </View>
-
-      {/* Status Pill */}
-      <View
-        className={`px-2 py-0.5 rounded-full border ${
-          item.status === "completed"
-            ? "bg-green-50 border-green-200"
-            : item.status === "pending"
-            ? "bg-yellow-50 border-yellow-200"
-            : "bg-red-50 border-red-200"
-        }`}
-      >
-        <Text
-          className={`text-[10px] font-semibold ${renderStatusColor(
-            item.status
-          )}`}
-        >
-          {item.status.toUpperCase()}
-        </Text>
-      </View>
-    </View>
-
-    {/* 💰 Amount + Method */}
-    <View className="mt-1 bg-gray-50 rounded-lg px-2 py-1 flex-row justify-between items-center">
-      <Text className="text-gray-900 font-bold text-lg tracking-tight">
-        ₹{item.amount.toLocaleString()}
-      </Text>
-      <View className="flex items-end">
-        <Text className="text-[10px] text-gray-500">Method</Text>
-        <Text className="font-semibold text-gray-800 text-xs">
-          {item.method?.toUpperCase()}
-        </Text>
-      </View>
-    </View>
-
-    {/* Balance Info */}
-    {item.type !== "deposit" && (
-      <View className="mt-2 bg-gray-50 border border-gray-100 px-2 py-1 rounded-lg">
-        <Text className="text-gray-600 text-[10px]">
-          Before:{" "}
-          <Text className="font-semibold text-gray-800">
-            ₹{item.balanceBefore?.toLocaleString() || "N/A"}
+  const renderItem = ({ item, index }) => (
+    <Animated.View
+      entering={FadeInDown.delay(index * 80).springify()}
+      className="bg-white mb-3 p-3 rounded-xl shadow-md border border-gray-300"
+      style={{ elevation: 2 }}
+    >
+      {/* Header Row */}
+      <View className="flex-row justify-between items-center mb-2">
+        <View>
+          <Text className="text-base font-semibold text-gray-900 capitalize">
+            {item.type === "withdrawal" ? "Withdrawal" : item.type}
           </Text>
-        </Text>
-        <Text className="text-gray-600 text-[10px] mt-0.5">
-          After:{" "}
-          <Text className="font-semibold text-gray-800">
-            ₹{item.balanceAfter?.toLocaleString() || "N/A"}
-          </Text>
-        </Text>
-      </View>
-    )}
 
-    {/* Timestamp */}
-    <Text className="text-gray-400 text-[10px] mt-2 text-right font-medium">
-      {new Date(item.createdAt).toLocaleString()}
+        {/* 🔹 Render only if withdrawId exists */}
+{item?.withdrawId && (
+  <View className="flex-row items-center mt-1">
+    <Text className="text-[16px] text-gray-600 font-medium">ID:</Text>
+    <Text className="text-[16px] font-semibold text-blue-600 ml-1">
+      {item.withdrawId}
     </Text>
-  </Animated.View>
-);
+
+    {/* Copy Button */}
+    <TouchableOpacity
+      onPress={async () => {
+        await Clipboard.setStringAsync(item.withdrawId);
+      }}
+      className="ml-2"
+    >
+      <Ionicons name="copy-outline" size={18} color="#3B82F6" />
+    </TouchableOpacity>
+  </View>
+)}
+        </View>
+
+        {/* Status Pill */}
+        <View
+          className={`px-2 py-0.5 rounded-full border ${
+            item.status === "completed"
+              ? "bg-green-50 border-green-200"
+              : item.status === "pending"
+                ? "bg-yellow-50 border-yellow-200"
+                : "bg-red-50 border-red-200"
+          }`}
+        >
+          <Text
+            className={`text-[10px] font-semibold ${renderStatusColor(
+              item.status
+            )}`}
+          >
+            {item.status.toUpperCase()}
+          </Text>
+        </View>
+      </View>
+
+      {/* 💰 Amount + Method */}
+      <View className="mt-1 bg-gray-50 rounded-lg px-2 py-1 flex-row justify-between items-center">
+        <Text className="text-gray-900 font-bold text-lg tracking-tight">
+          ₹{item.amount.toLocaleString()}
+        </Text>
+        <View className="flex items-end">
+          <Text className="text-[10px] text-gray-500">Method</Text>
+          <Text className="font-semibold text-gray-800 text-xs">
+            {item.method?.toUpperCase()}
+          </Text>
+        </View>
+      </View>
+
+      {/* Balance Info */}
+      {item.type !== "deposit" && (
+        <View className="mt-2 bg-gray-50 border border-gray-100 px-2 py-1 rounded-lg">
+          <Text className="text-gray-600 text-[10px]">
+            Before:{" "}
+            <Text className="font-semibold text-gray-800">
+              ₹{item.balanceBefore?.toLocaleString() || "N/A"}
+            </Text>
+          </Text>
+          <Text className="text-gray-600 text-[10px] mt-0.5">
+            After:{" "}
+            <Text className="font-semibold text-gray-800">
+              ₹{item.balanceAfter?.toLocaleString() || "N/A"}
+            </Text>
+          </Text>
+        </View>
+      )}
+
+      {/* Timestamp */}
+      <Text className="text-gray-400 text-[10px] mt-2 text-right font-medium">
+        {new Date(item.createdAt).toLocaleString()}
+      </Text>
+    </Animated.View>
+  );
 
   const handleStatusChange = (status) => {
     setSelectedStatus(status);
@@ -175,7 +187,9 @@ const renderItem = ({ item, index }) => (
       {/* Header */}
       <View className="flex-row items-center justify-between mb-5">
         <View>
-          <Text className="text-3xl font-extrabold text-gray-900">Payment History</Text>
+          <Text className="text-3xl font-extrabold text-gray-900">
+            Payment History
+          </Text>
           <Text className="text-gray-500 text-sm mt-1">
             Track all your transactions in one place
           </Text>
@@ -236,7 +250,11 @@ const renderItem = ({ item, index }) => (
           }
           ListFooterComponent={
             fetchPayments.isPending && page > 1 ? (
-              <ActivityIndicator size="small" color={COLORS.PRIMARY} className="my-4" />
+              <ActivityIndicator
+                size="small"
+                color={COLORS.PRIMARY}
+                className="my-4"
+              />
             ) : null
           }
         />
