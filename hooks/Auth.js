@@ -6,6 +6,18 @@ import { useUserStore } from '../store/AuthStore.js';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from 'expo-router';
+
+export const useRegisterUser = () => {
+  return useMutation({
+    mutationFn: ({email, password,referralCode}) => AuthAPI.registerUser({email,password,referralCode}),
+    onSuccess: (data) => {
+     Toast.show({ type: "success", text1: data.message || "Registration successful" });
+    },
+    onError: (error) => {
+      Toast.show({ type: "error", text1: error?.response?.data?.message || "Registration failed. Please try again." });
+    },
+  });
+};
 export const useLogin = () => {
   const setAuth = useUserStore((s) => s.setAuth);
   const router = useRouter();
@@ -18,9 +30,9 @@ export const useLogin = () => {
         await AsyncStorage.setItem("auth_token", res.token);
         await setAuth(res.token, res.user);
         Toast.show({ type: "success", text1: "Login successful" });
-        // router.replace("/Home"); // optional redirect
+        router.replace("/ReferEarn");
       } else {
-        Toast.show({ type: "error", text1: "Admins cannot log in here" });
+        Toast.show({ type: "error", text1: "admin login failed" });
       }
     },
 

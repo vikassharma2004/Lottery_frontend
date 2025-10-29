@@ -14,11 +14,14 @@ import { useRouter } from "expo-router";
 import { Picker } from "@react-native-picker/picker"; // ✅ install: expo install @react-native-picker/picker
 import { useReportIssue } from "@/hooks/Auth";
 import Toast from "react-native-toast-message";
+import { toastConfig } from "@/components/ToastConfig";
+import { useUserStore } from "@/store/AuthStore";
 
 export default function ReportIssue() {
   const router = useRouter();
+  const {user}=useUserStore();
  const { mutateAsync: submitReport, isPending } = useReportIssue();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(user?.email|| "");
   const [issueType, setIssueType] = useState("");
   const [description, setDescription] = useState("");
 
@@ -33,6 +36,17 @@ const handleSubmit = async () => {
     });
     return;
   }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (email && !emailRegex.test(email)) {
+    Toast.show({
+      type: "error",
+      text1: "Error",
+      text2: "Please enter a valid email address",
+      position: "top",
+      visibilityTime: 3000,
+    });
+    return;
+  }
 
 
     const payload = {
@@ -42,17 +56,11 @@ const handleSubmit = async () => {
     };
 
     const data = await submitReport(payload);
-
     if (data?.success) {
   
       setEmail("");
       setIssueType("");
       setDescription("");
-
-     
-      setTimeout(() => {
-        router.replace("/Login");
-      }, 800);
     }
   
 };
@@ -65,7 +73,7 @@ const handleSubmit = async () => {
             <Ionicons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
           <Text className="text-2xl font-bold text-gray-800 ml-2">
-            Report Issue
+            Help & Support
           </Text>
         </View>
 
@@ -82,9 +90,6 @@ const handleSubmit = async () => {
             autoCapitalize="none"
           />
         </View>
-
-      
-
           <View className="mb-6">
             <Text className="text-gray-700 mb-2 text-base font-medium">
               Issue Type
@@ -164,7 +169,7 @@ const handleSubmit = async () => {
           <Text className="text-black font-bold text-lg">{isPending ? <ActivityIndicator size="small" color="black" /> : "Submit"}</Text>
         </TouchableOpacity>
       </ScrollView>
-      <Toast/>
+      <Toast config={toastConfig}/>
     </SafeAreaView>
   );
 }

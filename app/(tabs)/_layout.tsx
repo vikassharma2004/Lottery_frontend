@@ -31,16 +31,7 @@ export default function TabLayout() {
         },
       }}
     >
-      {/* Home */}
-      <Tabs.Screen
-        name="Home"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
-          ),
-        }}
-      />
+      
 
       {/* Refer & Earn */}
       <Tabs.Screen

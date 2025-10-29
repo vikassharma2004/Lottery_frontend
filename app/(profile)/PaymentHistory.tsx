@@ -82,54 +82,87 @@ export default function PaymentHistory() {
     }
   };
 
-  const renderItem = ({ item, index }) => (
-    <Animated.View
-      entering={FadeInDown.delay(index * 80).springify()}
-      className="bg-white mb-4 p-4 rounded-2xl shadow-md border border-gray-100"
-      style={{ elevation: 3 }}
-    >
-      <View className="flex-row justify-between items-center mb-2">
-        <Text className="text-lg font-semibold text-gray-900 capitalize">
-          {item.type}
+const renderItem = ({ item, index }) => (
+  <Animated.View
+    entering={FadeInDown.delay(index * 80).springify()}
+    className="bg-white mb-3 p-3 rounded-xl shadow-md border border-gray-300"
+    style={{ elevation: 2 }}
+  >
+    {/* Header Row */}
+    <View className="flex-row justify-between items-center mb-2">
+      <View>
+        <Text className="text-base font-semibold text-gray-900 capitalize">
+          {item.type === "withdrawal" ? "Withdrawal" : item.type}
         </Text>
-        <View
-          className={`px-3 py-1 rounded-full ${
-            item.status === "completed"
-              ? "bg-green-100"
-              : item.status === "pending"
-              ? "bg-yellow-100"
-              : "bg-red-100"
-          }`}
+
+        {/* 🔹 Static Withdrawal ID (temporary) */}
+        {item.type === "withdrawal" && (
+          <View className="flex-row items-center mt-0.5">
+            <Text className="text-[10px] text-gray-600 font-medium">ID: </Text>
+            <Text className="text-[10px] font-semibold text-blue-600">
+              WD-123456
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* Status Pill */}
+      <View
+        className={`px-2 py-0.5 rounded-full border ${
+          item.status === "completed"
+            ? "bg-green-50 border-green-200"
+            : item.status === "pending"
+            ? "bg-yellow-50 border-yellow-200"
+            : "bg-red-50 border-red-200"
+        }`}
+      >
+        <Text
+          className={`text-[10px] font-semibold ${renderStatusColor(
+            item.status
+          )}`}
         >
-          <Text className={`text-xs font-semibold ${renderStatusColor(item.status)}`}>
-            {item.status}
-          </Text>
-        </View>
-      </View>
-
-      <View className="flex-row justify-between items-center mt-1">
-        <Text className="text-gray-800 font-bold text-xl">
-          ₹{item.amount.toLocaleString()}
+          {item.status.toUpperCase()}
         </Text>
-        <Text className="text-gray-500 text-sm">Method: {item.method}</Text>
       </View>
+    </View>
 
-      {item.type !== "deposit" && (
-        <View className="mt-2">
-          <Text className="text-gray-500 text-xs">
-            Balance Before: ₹{item.balanceBefore?.toLocaleString() || "N/A"}
-          </Text>
-          <Text className="text-gray-500 text-xs">
-            Balance After: ₹{item.balanceAfter?.toLocaleString() || "N/A"}
-          </Text>
-        </View>
-      )}
-
-      <Text className="text-gray-400 text-xs mt-2">
-        {new Date(item.createdAt).toLocaleString()}
+    {/* 💰 Amount + Method */}
+    <View className="mt-1 bg-gray-50 rounded-lg px-2 py-1 flex-row justify-between items-center">
+      <Text className="text-gray-900 font-bold text-lg tracking-tight">
+        ₹{item.amount.toLocaleString()}
       </Text>
-    </Animated.View>
-  );
+      <View className="flex items-end">
+        <Text className="text-[10px] text-gray-500">Method</Text>
+        <Text className="font-semibold text-gray-800 text-xs">
+          {item.method?.toUpperCase()}
+        </Text>
+      </View>
+    </View>
+
+    {/* Balance Info */}
+    {item.type !== "deposit" && (
+      <View className="mt-2 bg-gray-50 border border-gray-100 px-2 py-1 rounded-lg">
+        <Text className="text-gray-600 text-[10px]">
+          Before:{" "}
+          <Text className="font-semibold text-gray-800">
+            ₹{item.balanceBefore?.toLocaleString() || "N/A"}
+          </Text>
+        </Text>
+        <Text className="text-gray-600 text-[10px] mt-0.5">
+          After:{" "}
+          <Text className="font-semibold text-gray-800">
+            ₹{item.balanceAfter?.toLocaleString() || "N/A"}
+          </Text>
+        </Text>
+      </View>
+    )}
+
+    {/* Timestamp */}
+    <Text className="text-gray-400 text-[10px] mt-2 text-right font-medium">
+      {new Date(item.createdAt).toLocaleString()}
+    </Text>
+  </Animated.View>
+);
 
   const handleStatusChange = (status) => {
     setSelectedStatus(status);
@@ -147,7 +180,7 @@ export default function PaymentHistory() {
             Track all your transactions in one place
           </Text>
         </View>
-        <Ionicons name="wallet-outline" size={32} color={COLORS.PRIMARY} />
+        <Ionicons name="wallet-outline" size={32} color={"green"} />
       </View>
 
       {/* Filters */}
@@ -161,12 +194,12 @@ export default function PaymentHistory() {
             <TouchableOpacity
               onPress={() => handleStatusChange(item)}
               className={`px-4 py-2 mr-2 rounded-full ${
-                selectedStatus === item ? "bg-indigo-600" : "bg-gray-200"
+                selectedStatus === item ? "bg-[#FFB800]" : "bg-gray-200"
               }`}
             >
               <Text
                 className={`text-sm font-semibold ${
-                  selectedStatus === item ? "text-white" : "text-gray-700"
+                  selectedStatus === item ? "text-black" : "text-gray-700"
                 }`}
               >
                 {item.charAt(0).toUpperCase() + item.slice(1)}

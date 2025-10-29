@@ -13,6 +13,7 @@ export default function AuthLayout() {
         <Stack.Screen name="SignUp" />
         <Stack.Screen name="OtpVerify" />
         <Stack.Screen name="ResetPassword" />
+        <Stack.Screen name="FaqScreen" />
       </Stack>
       <Toast/>
     </>

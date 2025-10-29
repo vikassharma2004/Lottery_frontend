@@ -133,36 +133,7 @@ export default function Wallet() {
           </View>
         </View>
 
-        {/* Transaction History */}
-        <View
-          className="rounded-2xl p-4 shadow-md"
-          style={{ backgroundColor: "#FFFFFF" }}
-        >
-          <Text className="text-lg font-semibold mb-3 text-[#2F3542]">
-            Recent Transactions
-          </Text>
-
-          {[
-            { id: 1, desc: "Withdrawal to UPI", amount: "-₹500", type: "debit" },
-            { id: 2, desc: "Referral from Aayush", amount: "+₹100", type: "credit" },
-            { id: 3, desc: "Payment from Sanya", amount: "+₹250", type: "credit" },
-          ].map((tx) => (
-            <View
-              key={tx.id}
-              className="flex-row justify-between py-3 border-b border-gray-200"
-            >
-              <Text className="text-[#2F3542]">{tx.desc}</Text>
-              <Text
-                style={{
-                  color: tx.type === "credit" ? COLORS.SUCCESS : COLORS.DANGER,
-                  fontWeight: "600",
-                }}
-              >
-                {tx.amount}
-              </Text>
-            </View>
-          ))}
-        </View>
+     
 
         {/* Withdraw Modal */}
         <WithdrawRequestModal

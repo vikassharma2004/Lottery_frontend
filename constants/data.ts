@@ -27,11 +27,18 @@ export const userSettings: SettingItem[] = [
      navigate:'/ChangePassword'
   },
   {
-    title: 'Report Issue',
-    icon: 'alert-circle-outline',
+    title: 'Support',
+    icon: 'help-circle-outline',
     role: 'user',
      navigate:'/ReportIssue'
   },
+  {
+  title: 'FAQ',
+  icon: 'information-circle-outline', // Ionicons icon
+  role: 'user',
+  navigate: '/FaqScreen',
+}
+
 ];
 
 

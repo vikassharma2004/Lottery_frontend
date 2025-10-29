@@ -14,16 +14,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "react-native";
 import { Link, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
-import { toastConfig } from "@/components/ToastConfig";
 import "../../global.css";
 import { useUserStore } from "@/store/AuthStore";
-
+import { useRegisterUser } from "@/hooks/Auth";
 const SignUp = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [referralCode, setReferralCode] = useState("");
-  const { register, loading } = useUserStore();
+  const {mutateAsync: registerUser,isPending} = useRegisterUser();
+
 
   const handleSubmit = async () => {
     // Trim inputs
@@ -67,12 +67,13 @@ const SignUp = () => {
       });
     }
 
-    const res = await register({
+    const res = await registerUser({
       email: trimmedEmail,
       password: trimmedPassword,
       referralCode: trimmedReferral,
     });
-    if (res) {
+    console.log("res", res);
+    if (res?.success) {
       setEmail("");
       setPassword("");
       setReferralCode("");
@@ -131,13 +132,13 @@ const SignUp = () => {
             />
 
             <TouchableOpacity
-              disabled={loading}
+              disabled={isPending}
               onPress={handleSubmit}
               className={`rounded-lg py-3 items-center ${
-                loading ? "bg-gray-400" : "bg-[#FFB800]"
+                isPending ? "bg-gray-400" : "bg-[#FFB800]"
               }`}
             >
-              {loading ? (
+              {isPending ? (
                 <ActivityIndicator color="black" />
               ) : (
                 <Text className="text-black font-bold text-lg">Submit</Text>

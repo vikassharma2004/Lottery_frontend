@@ -73,7 +73,7 @@ const RootContent = () => {
       return;
     }
 
-    router.replace("/(tabs)/Home");
+    router.replace("/(tabs)/ReferEarn");
   }, [ready, token]);
 
   if (!hydrated || !ready) return <SplashScreen />;

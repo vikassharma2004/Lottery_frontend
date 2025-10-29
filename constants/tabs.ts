@@ -1,6 +1,5 @@
 // constants/tabs.ts
-const userTabs = [
-  { name: "Home", title: "Home", icon: "home" },            // Ionicons
+const userTabs = [          // Ionicons
   { name: "ReferEarn", title: "Refer", icon: "gift" },
   { name: "Profile", title: "Profile", icon: "person" },
 ];

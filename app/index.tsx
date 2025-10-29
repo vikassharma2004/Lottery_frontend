@@ -5,7 +5,6 @@ import { useRouter } from "expo-router";
 import { useUserStore } from "@/store/AuthStore";
 import SplashScreen from "@/components/SplashScreen";
 import "../global.css";
-
 export default function Index() {
   const router = useRouter();
   const { token, hydrated, user } = useUserStore();
@@ -16,11 +15,9 @@ export default function Index() {
 
     // Only redirect once
     if (token) {
-      if (user?.role === "admin") {
-        router.replace("/Dashboard");
-      } else {
-        router.replace("/Home");
-      }
+
+        router.replace("/ReferEarn");
+      
     }
     setBooting(false); // done with routing
   }, [hydrated, token, user, router]);

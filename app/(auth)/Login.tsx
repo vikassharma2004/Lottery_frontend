@@ -62,12 +62,12 @@ const { mutateAsync: loginUser, isPending } = useLogin();
   return (
     <SafeAreaView className="flex-1 bg-[#FFF8E7]">
       {/* Header with Report Icon */}
-      <View className="flex-row justify-end items-center px-5 pt-3">
+      <View className="flex-row justify-end items-center px-5">
         <TouchableOpacity
           onPress={() => router.push("/ReportIssue")}
           className="p-2 flex-row items-center gap-2"
         >
-          <Ionicons name="alert-circle-outline" size={30} color="black" />
+          <Ionicons name="help-circle-outline" size={30} color="black" />
         </TouchableOpacity>
       </View>
 
